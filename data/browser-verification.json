@@ -1,0 +1,26 @@
+{
+  "observedAt": "2026-11-14T19:46:43.618583+00:00",
+  "source": "Connections panel of the user-started HomeFit server at http://localhost:4317, viewed in Chrome",
+  "matterport": {
+    "accountQuery": "connected",
+    "reportedModels": 14945,
+    "sampleModelId": "QAVsUEviwyK",
+    "sampleModelAccess": "connected",
+    "reportedRooms": 7,
+    "sampleIndoorFloorArea": "available"
+  },
+  "vexcel": {
+    "mcpAuthentication": "connected",
+    "imageryEntitlement": "not verified",
+    "structureEntitlement": "not verified"
+  },
+  "sdk": {
+    "modelId": "ASWK3CoJ75u",
+    "connection": "succeeded",
+    "savedTourDiscovery": "failed in previous app build",
+    "statusBug": "Fixed in source; running server must restart to load changes"
+  },
+  "checks": {
+    "automatedTestsPassed": 17
+  }
+}

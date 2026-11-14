@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-11-14T19:20:03.696Z",
+  "sampleModelId": "QAVsUEviwyK",
+  "checks": [
+    {
+      "name": "Matterport GraphQL",
+      "ok": false,
+      "state": "Connection failed",
+      "detail": "The server could not reach Matterport. Credential validity is unverified."
+    },
+    {
+      "name": "Kit model access",
+      "ok": false,
+      "state": "Connection failed",
+      "detail": "The server could not reach Matterport. Credential validity is unverified."
+    },
+    {
+      "name": "Room dimensions",
+      "ok": false,
+      "state": "Connection failed",
+      "detail": "The server could not reach Matterport. Credential validity is unverified."
+    },
+    {
+      "name": "Vexcel API",
+      "ok": false,
+      "state": "Connection failed",
+      "detail": "The server could not reach Vexcel. Credential validity and imagery permissions are unverified."
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+export function matchingPlans(property, filters={}) {
+ if(filters.city && property.city!==filters.city)return [];
+ const text=[property.name,property.address,property.zip,property.city].join(' ').toLowerCase();
+ if(filters.query && !text.includes(filters.query.trim().toLowerCase()))return [];
+ if(filters.dogs && (property.noPets===true || !property.pets.some(x=>x.type==='Dog')))return [];
+ if(filters.parking && (property.noParking===true || !property.parking.length))return [];
+ return property.plans.filter(p=>{
+  if(!(p.rentMin>0) || !(p.available>0))return false;
+  if(filters.beds!==undefined && filters.beds!==''){
+   const b=Number(filters.beds);
+   if(b===3 ? !(p.beds>=3) : p.beds!==b)return false;
+  }
+  return !filters.budget || p.rentMin<=Number(filters.budget);
+ });
+}
+export function selectPlan(property, filters, preferredId) {
+ const plans=matchingPlans(property,filters);
+ return plans.find(p=>p.id===Number(preferredId)) || [...plans].sort((a,b)=>a.rentMin-b.rentMin)[0] || null;
+}
+export function normalizeSelections(input,properties){
+ const selected=[];
+ for(const item of Array.isArray(input)?input:[]){
+  const property=properties.find(p=>p.id===Number(item.propertyId));
+  if(!property || selected.some(x=>x.propertyId===property.id))continue;
+  const plan=property.plans.find(p=>p.id===Number(item.planId));
+  if(plan)selected.push({propertyId:property.id,planId:plan.id});
+  if(selected.length===3)break;
+ }
+ return selected;
+}
+export function comparisonInsights(entries){
+ if(entries.length<2)return [];
+ const notes=[];
+ const sorted=[...entries].sort((a,b)=>a.plan.rentMin-b.plan.rentMin);
+ const low=sorted[0],high=sorted.at(-1),difference=high.plan.rentMin-low.plan.rentMin;
+ if(difference>0)notes.push({kind:'rent',propertyId:low.property.id,difference,text:low.property.name+' starts $'+difference.toLocaleString('en-US')+'/month below '+high.property.name+'. This compares minimum asking rents, before fees.'});
+ const known=entries.filter(x=>x.plan.sqftMin>0).sort((a,b)=>b.plan.sqftMin-a.plan.sqftMin);
+ if(known.length>1 && known[0].plan.sqftMin>known.at(-1).plan.sqftMin)notes.push({kind:'space',propertyId:known[0].property.id,text:known[0].property.name+' has the largest reported minimum floor-plan area: '+known[0].plan.sqftMin.toLocaleString('en-US')+' sq ft.'});
+ if(new Set(entries.map(x=>x.plan.beds)).size>1)notes.push({kind:'beds',text:'These floor plans have different bedroom counts. Keep that difference in mind when comparing rent and space.'});
+ if(new Set(entries.map(x=>x.property.city)).size>1)notes.push({kind:'city',text:'These properties are in different cities. Prices reflect different local markets.'});
+ return notes;
+}

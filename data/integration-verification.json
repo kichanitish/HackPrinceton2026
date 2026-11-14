@@ -1,0 +1,84 @@
+{
+  "observedAt": "2026-11-14T22:41:17.420949+00:00",
+  "source": "Running localhost HomeFit app inspected through Chrome",
+  "catalog": {
+    "properties": 789,
+    "coveredCoordinates": 789,
+    "unverifiedCoordinates": 0,
+    "cities": {
+      "Houston": {
+        "total": 550,
+        "covered": 550
+      },
+      "Los Angeles": {
+        "total": 239,
+        "covered": 239
+      }
+    },
+    "method": "Recorded catalog coordinates tested against the geometry of returned Vexcel urban/wide-area collections. Maximum eight recent collection footprints queried per city."
+  },
+  "imageRetrievalVerified": [
+    {
+      "propertyId": 9640892,
+      "name": "1300 North Post Oak",
+      "city": "Houston",
+      "collection": "us-tx-houston-2026",
+      "captureWindow": [
+        "2025-12-19",
+        "2026-01-02"
+      ],
+      "sourceGsdCm": 7.2
+    },
+    {
+      "propertyId": 7565326,
+      "name": "The Falls of Beechnut",
+      "city": "Houston",
+      "collection": "us-tx-houston-2026"
+    },
+    {
+      "propertyId": 4027897,
+      "name": "1025 S Holt Ave",
+      "city": "Los Angeles",
+      "collection": "us-ca-losangeles-2025",
+      "captureWindow": [
+        "2025-11-29",
+        "2025-12-10"
+      ],
+      "sourceGsdCm": 5.6,
+      "historicalCollectionVerified": "us-ca-losangeles-2024"
+    }
+  ],
+  "matterportMeasurementsVerified": [
+    {
+      "modelId": "QAVsUEviwyK",
+      "indoorAreaSqFt": 906.3096199597359,
+      "roomRecords": 7
+    },
+    {
+      "modelId": "bcjUFBUo1xR",
+      "indoorAreaSqFt": 712,
+      "namedRooms": [
+        "Living Room",
+        "Bedroom",
+        "Kitchen",
+        "Bathroom",
+        "Hallway"
+      ]
+    }
+  ],
+  "sdkInteractionsVerified": [
+    "Camera movement",
+    "Automatic room walkthrough",
+    "Jump to Bedroom",
+    "Floor-plan mode",
+    "JPEG screenshot download"
+  ],
+  "limitations": [
+    "Coverage footprints were checked for all 789 catalog locations; images were downloaded only for selected test properties.",
+    "Room metadata and measurements vary by scan.",
+    "Native saved-tour discovery failed on tested models; automatic walkthrough is a separate app feature.",
+    "No live CoStar API credential supplied.",
+    "Vexcel structure/roof entitlements not verified."
+  ],
+  "automatedTestsPassed": 26
+}
