@@ -1,0 +1,74 @@
+{
+  "about": "Zones each business needs, with the size rules the layout checker tests against measured Matterport rooms. Severity: 'legal' = set by a cited code or licensing rule; 'functional' = the business cannot operate without it (sizes are planning rules, labelled as such); 'advisory' = good practice, reported but never blocking. Only legal and functional failures count as conflicts.",
+  "sources": {
+    "ada_turning": {"label": "2010 ADA Standards §304.3 — 60 in turning space", "url": "https://www.access-board.gov/ada/#ada-304"},
+    "ada_toilet": {"label": "2010 ADA Standards §603 — toilet rooms", "url": "https://www.access-board.gov/ada/#ada-603"},
+    "ibc_1004": {"label": "IBC Table 1004.5", "url": "https://codes.iccsafe.org/content/IBC2021P2/chapter-10-means-of-egress#IBC2021P2_Ch10_Sec1004.5"},
+    "planning": {"label": "Planning rule of thumb (Fit-to-Space assumption)", "url": null}
+  },
+  "zones": {
+    "cafe": [
+      {"id": "seating", "label": "Dining / seating area", "main": true, "severity": "legal",
+       "area": {"per_person": "capacity_rule"}, "source": "ibc_1004",
+       "why": "Seats need 15 sq ft of dining floor each."},
+      {"id": "kitchen", "label": "Prep & dish area", "severity": "functional",
+       "area": {"min": 80, "share_of_main": 0.15}, "min_width_ft": 6, "source": "planning",
+       "why": "Espresso, prep sink and dishwashing need a back area; ~15% of the dining area, at least 80 sq ft, with a 6 ft clear width for a counter line plus aisle."},
+      {"id": "counter", "label": "Service counter", "severity": "advisory",
+       "area": {"min": 60}, "source": "planning", "why": "Ordering and pickup counter."},
+      {"id": "restroom", "label": "Accessible restroom", "severity": "functional", "count": 1,
+       "area": {"min": 40}, "min_width_ft": 5, "width_severity": "legal", "source": "ada_turning",
+       "why": "Food service needs a customer restroom; an accessible single-user room needs a 5 ft (60 in) turning space."}
+    ],
+    "restaurant": [
+      {"id": "seating", "label": "Dining room", "main": true, "severity": "legal",
+       "area": {"per_person": "capacity_rule"}, "source": "ibc_1004",
+       "why": "Seats need 15 sq ft of dining floor each."},
+      {"id": "kitchen", "label": "Kitchen", "severity": "functional",
+       "area": {"min": 200, "share_of_main": 0.35}, "min_width_ft": 8, "source": "planning",
+       "why": "A full kitchen is commonly 30–40% of the dining area (35% used here, at least 200 sq ft) and needs ~8 ft clear for a cook line plus a 42 in aisle."},
+      {"id": "restroom", "label": "Accessible restroom", "severity": "functional", "count": 2,
+       "area": {"min": 40}, "min_width_ft": 5, "width_severity": "legal", "source": "ada_turning",
+       "why": "Restaurants this size usually need two restrooms; each accessible single-user room needs a 5 ft turning space. Exact count depends on the plumbing code's occupant load."},
+      {"id": "storage", "label": "Dry storage", "severity": "advisory",
+       "area": {"min": 60}, "source": "planning", "why": "Dry goods and supplies."}
+    ],
+    "gym": [
+      {"id": "workout", "label": "Workout floor", "main": true, "severity": "legal",
+       "area": {"per_person": "capacity_rule"}, "source": "ibc_1004", "min_height_ft": 9, "height_severity": "advisory",
+       "why": "50 sq ft per person exercising; 9 ft+ ceilings suit overhead lifts and jump work."},
+      {"id": "lockers", "label": "Lockers & restroom", "severity": "functional", "count": 1,
+       "area": {"min": 60}, "min_width_ft": 5, "width_severity": "legal", "source": "ada_turning",
+       "why": "Members need a restroom and changing area; accessible rooms need a 5 ft turning space."},
+      {"id": "reception", "label": "Reception", "severity": "advisory",
+       "area": {"min": 80}, "source": "planning", "why": "Check-in desk and waiting."}
+    ],
+    "clinic": [
+      {"id": "exam", "label": "Exam room", "severity": "functional", "count": "exam_rooms",
+       "area": {"min": 100}, "min_width_ft": 8, "source": "planning",
+       "why": "One exam room per 3 people inside at once; each ~100 sq ft and 8 ft wide fits a table, a clinician and a chair. Some states apply FGI outpatient guidelines — confirm locally."},
+      {"id": "waiting", "label": "Waiting & reception", "main": true, "severity": "functional",
+       "area": {"min": 120}, "source": "planning", "why": "Front desk and seated waiting."},
+      {"id": "restroom", "label": "Accessible restroom", "severity": "functional", "count": 1,
+       "area": {"min": 40}, "min_width_ft": 5, "width_severity": "legal", "source": "ada_turning",
+       "why": "Patients need an accessible restroom with a 5 ft turning space."},
+      {"id": "staff", "label": "Office / lab", "severity": "advisory",
+       "area": {"min": 80}, "source": "planning", "why": "Charting, supplies and a small lab."}
+    ],
+    "daycare": [
+      {"id": "classrooms", "label": "Classrooms / activity space", "main": true, "severity": "legal",
+       "area": {"per_person": "capacity_rule"}, "source": "state_rule",
+       "why": "State licensing sets indoor activity space per child, excluding bathrooms, halls, offices and kitchen."},
+      {"id": "restroom", "label": "Children's restroom", "severity": "functional", "count": "per_15",
+       "area": {"min": 40}, "min_width_ft": 5, "width_severity": "legal", "source": "ada_turning",
+       "why": "About one restroom per 15 children (planning rule — confirm the licensing count); each accessible room needs a 5 ft turning space."},
+      {"id": "kitchen", "label": "Kitchen / food prep", "severity": "functional",
+       "area": {"min": 80}, "source": "planning", "why": "Meals and snacks need a prep area."},
+      {"id": "office", "label": "Office & sick-child area", "severity": "advisory",
+       "area": {"min": 80}, "source": "planning", "why": "Director's office and an isolation area."},
+      {"id": "outdoor", "label": "Outdoor play area", "severity": "legal", "exterior": true,
+       "area": {"per_person": "outdoor_rule"}, "source": "state_rule",
+       "why": "State licensing requires outdoor play space per child. An interior scan cannot verify it — check the lot and the aerial view."}
+    ]
+  }
+}

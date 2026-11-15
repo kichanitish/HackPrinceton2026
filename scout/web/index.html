@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Floorproof — commercial space, proven to fit</title>
+  <meta name="description" content="Describe your business. Floorproof screens every listing against the building code, proves the best against 3D scans and aerials, and ranks the ten that fit.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='none' stroke='%23CFF73A' stroke-width='3'/%3E%3Cpath d='M11 23V10h10M11 16h7' fill='none' stroke='%23CFF73A' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/vendor/leaflet.css">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body class="is-landing">
+  <div id="map" class="map" aria-label="Map of spaces for lease"></div>
+  <div class="scrim" aria-hidden="true"></div>
+
+  <!-- ============ landing ============ -->
+  <header class="land-bar">
+    <a class="logo" href="/" aria-label="Floorproof">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="7"/><path d="M11 23V10h10M11 16h7"/></svg>
+      <span>Floorproof</span>
+    </a>
+    <span class="land-src">CoStar · Matterport · Vexcel</span>
+  </header>
+  <section class="hero" id="hero">
+    <p class="hero-k"><i></i>Commercial space, proven to fit</p>
+    <h1>Tell us the business.<br><span>We'll find the space it fits.</span></h1>
+    <form class="hero-ask" id="ask" autocomplete="off">
+      <svg class="s-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <label class="sr-only" for="q">Describe your business</label>
+      <input id="q" type="text" maxlength="300" placeholder="Coffee shop, 40 seats, Houston, under $30/sq ft" autofocus>
+      <button type="submit" id="go">Find spaces</button>
+    </form>
+    <div class="hero-ex" id="examples"></div>
+    <ul class="hero-stats" id="stats"></ul>
+  </section>
+
+  <!-- ============ workspace ============ -->
+  <aside class="side" id="side" aria-label="Navigation">
+    <a class="logo" href="/" aria-label="Floorproof, new search">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="7"/><path d="M11 23V10h10M11 16h7"/></svg>
+      <span>Floorproof</span>
+    </a>
+    <span class="side-lbl">Menu</span>
+    <nav class="side-nav" id="nav">
+      <button class="nav-item active" data-panel="results"><svg viewBox="0 0 24 24"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Spaces by map</span></button>
+      <button class="nav-item" data-panel="investigation"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4M11 8v3l2 2"/></svg><span>Investigation</span><i class="badge" id="nav-count"></i></button>
+      <button class="nav-item" data-panel="requirements"><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M9 21V9"/></svg><span>Requirements</span></button>
+    </nav>
+    <span class="side-lbl">Support</span>
+    <nav class="side-nav">
+      <button class="nav-item" data-panel="about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>How it scores</span></button>
+      <a class="nav-item" href="/"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>New search</span></a>
+    </nav>
+    <div class="agent-card" id="agent-card">
+      <span class="av">AI</span>
+      <div><b>Site analyst</b><small id="agent-sub">Ready</small></div>
+    </div>
+  </aside>
+
+  <header class="top" id="top">
+    <button class="icon-btn" id="burger" aria-label="Toggle menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h16"/></svg></button>
+    <form class="cmd" id="cmd" autocomplete="off">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="cmd-q" aria-label="New request" placeholder="Describe another business…">
+      <kbd>⏎</kbd>
+    </form>
+    <div class="top-right">
+      <span class="run" id="run"></span>
+      <button class="btn-outline" id="rerun" hidden>Re-run</button>
+    </div>
+  </header>
+
+  <div class="filters" id="filters"></div>
+
+  <section class="list" id="list" aria-live="polite"></section>
+
+  <section class="explore" id="explore" hidden aria-label="Property"></section>
+  <div class="tip" id="tip" role="tooltip" hidden></div>
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="/vendor/leaflet.js"></script>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# Secrets: never commit
+.env
+env
+*.credentials*
+
+# CoStar kit data (licensed, do not commit), built tables, caches, map snapshot
+costar-hackathon-kit.zip
+data/
+
+# Logs
+logs/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f8f9f6">
+<meta name="description" content="Tell an agent what you need. It finds homes or commercial spaces in Houston and Los Angeles, picks your top 10 and digs into the top 3.">
+<title>scout. — the agent that does the looking</title>
+<link rel="stylesheet" href="/vendor/leaflet.css">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body data-mode="home">
+<header class="header">
+  <a class="brand" href="/" aria-label="scout home"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="12.5" cy="12.5" r="7.5"/><path d="m18 18 6 6M12.5 8.5v8M8.5 12.5h8"/></svg>scout<span class="brand-dot">.</span></a>
+  <nav aria-label="Main">
+    <button class="nav-button active" id="searchNav">Search</button>
+    <button class="nav-button" id="compareNav">Compare <span id="navCount">0</span></button>
+  </nav>
+  <button class="subtle" id="agentPill" title="Agent status"><span class="status-dot"></span><span id="agentText">Agent</span></button>
+</header>
+
+<main id="explore">
+  <section class="intro">
+    <div>
+      <div class="eyebrow" id="eyebrow">AN AGENT THAT DOES THE LOOKING.</div>
+      <h1 id="headline">Tell us what you need.<br><em>We'll find the place.</em></h1>
+      <p id="lede">A home to live in or a space for your business: say it the way you'd say it to a friend.<br class="desktop"> The agent works out which, writes your brief and does the rest.</p>
+    </div>
+    <div class="intro-note">
+      <span class="mini-icon">✦</span>
+      <strong>Picked by an agent.</strong>
+      <span>Homes for rent and commercial space for lease.<br>It picks your top 10 and digs into the top 3.<br>Houston &amp; Los Angeles.</span>
+    </div>
+  </section>
+
+  <section class="search-section" aria-label="Ask">
+    <form class="ask-bar" id="ask">
+      <label class="field ask-field"><span id="askLabel">WHAT ARE YOU LOOKING FOR?</span>
+        <input id="q" type="search" autocomplete="off" placeholder="2-bed with parking near an elementary school in Houston, or a coffee shop space downtown">
+      </label>
+      <button class="primary" id="go" type="submit">Find places <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </form>
+    <div class="filter-options"><div class="chips" id="examples"></div></div>
+  </section>
+
+  <section id="workspace" hidden>
+    <div class="brief-head">
+      <div><div class="eyebrow">YOUR BRIEF</div><p class="muted small" id="briefNote">Written by the agent from your request. Change anything and search again.</p></div>
+      <button class="secondary" id="applyBrief" hidden>Search with these changes</button>
+    </div>
+    <div class="brief-bar" id="brief"></div>
+    <p class="adjust" id="adjust" hidden></p>
+
+    <div class="progress" id="progress" aria-live="polite"></div>
+
+    <div class="results-heading">
+      <div><h2 id="resultsTitle">Your top 10</h2><p id="resultCount">The agent is searching…</p></div>
+      <div class="view-switch" role="tablist" aria-label="View">
+        <button role="tab" aria-selected="true" data-view="cards">Picks</button>
+        <button role="tab" aria-selected="false" data-view="table">Compare all 10</button>
+      </div>
+    </div>
+
+    <div class="map-wrap"><div id="map" aria-label="Map of your places and picks"></div><div class="map-legend" id="legend"></div></div>
+
+    <section id="cardsView">
+      <h3 class="section-title" id="deepTitle" hidden>Top 3 · deep dives</h3>
+      <div id="deepCards" class="cards"></div>
+      <h3 class="section-title" id="moreTitle" hidden>More picks</h3>
+      <div id="moreCards" class="cards"></div>
+      <div id="loading" class="cards"></div>
+    </section>
+    <section id="tableView" hidden></section>
+    <div id="empty" class="empty" hidden><span>⌕</span><h2>Nothing matched.</h2><p id="emptyText">Try a wider budget or a bigger radius.</p></div>
+  </section>
+</main>
+
+<main id="comparison" hidden>
+  <div class="compare-title"><div><button id="backBrowse" class="text-button">← Back to your picks</button><h1>Side by side.</h1><p>Your selected picks, measure by measure.</p></div></div>
+  <div id="comparisonContent"></div>
+</main>
+
+<footer><span class="brand footer-brand">scout.</span><p id="footNote">CoStar snapshot · November 12, 2026. Places © OpenStreetMap contributors. Aerial imagery © Vexcel Imaging.<br>Distances are straight-line miles. Asking rents and availability may change; confirm with the property or broker.</p></footer>
+
+<aside id="tray" class="compare-tray" aria-label="Compare" hidden>
+  <div id="trayItems" class="tray-items"></div>
+  <div class="tray-actions"><button id="clearSelection" class="text-button">Clear</button><button id="compareButton" class="primary">Compare <span id="trayCount">0 / 3</span> →</button></div>
+</aside>
+
+<dialog id="detailDialog" class="detail-dialog"><div id="detailContent"></div></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+<script src="/vendor/leaflet.js"></script>
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>
