@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: scout
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run sdk:install && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-5.5
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: openrouter/free
+      - key: MATTERPORT_API_KEY
+        sync: false
+      - key: MATTERPORT_API_TOKEN
+        sync: false
+      - key: MATTERPORT_SDK_KEY
+        sync: false
+      - key: VEXCEL_API_KEY
+        sync: false
+      - key: GOOGLE_MAPS_EMBED_KEY
+        sync: false
