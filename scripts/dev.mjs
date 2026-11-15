@@ -36,7 +36,10 @@ const server=http.createServer(async(req,res)=>{
     const bytes=await readFile(file);res.writeHead(200,{'content-type':mime[extname(file)]||'application/octet-stream','cache-control':'public, max-age=3600','x-content-type-options':'nosniff'});res.end(req.method==='HEAD'?undefined:bytes);return;
    }catch{res.writeHead(404);res.end('Bundle asset unavailable. Run npm run sdk:install.');return}
   }
-  const request=new Request(url,{method:req.method,headers:req.headers});
+  const hasBody=!['GET','HEAD'].includes(req.method);
+  let body;if(hasBody){const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>4096){res.writeHead(413,{'content-type':'application/json'});res.end(JSON.stringify({ok:false,code:'invalid'}));return}chunks.push(chunk)}body=Buffer.concat(chunks)}
+  const controller=new AbortController();req.on('aborted',()=>controller.abort());res.on('close',()=>{if(!res.writableEnded)controller.abort()});
+  const request=new Request(url,{method:req.method,headers:req.headers,signal:controller.signal,...(hasBody?{body}:{} )});
   const response=await worker.fetch(request,process.env,{});
   res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));
  }catch{res.writeHead(500,{'content-type':'application/json'});res.end(JSON.stringify({error:'An unexpected server error occurred'}))}

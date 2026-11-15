@@ -2,6 +2,7 @@
 const PAGE = "__PAGE__";
 const CATALOG = "__CATALOG__";
 const modelIds=new Set(CATALOG.properties.flatMap(p=>p.plans.flatMap(plan=>plan.tours.map(t=>t.id))));
+let activeMatchRequests=0,matchWindowStart=0,matchWindowCount=0;
 let cachedCheck=null,checkTime=0,pendingCheck=null;
 const coverageCache=new Map(),modelCache=new Map(),imageCache=new Map();let coverageAudit=null,auditJob=null;const imageVerified=new Set();
 async function coverageFor(env,p){if(!coverageCache.has(p.id)){const result=await propertyCoverage(env,p);if(result.ok)coverageCache.set(p.id,result);else return result}return coverageCache.get(p.id)}
@@ -19,7 +20,28 @@ export default {async fetch(request,env={}){
  const url=new URL(request.url);
  if(url.pathname.startsWith('/bundle/'))return env.ASSETS?env.ASSETS.fetch(request):json({error:'Bundle assets are not configured on this host'},404);
  if(url.pathname==='/api/catalog')return new Response(JSON.stringify(CATALOG),{headers:{...JSON_HEADERS,'cache-control':'private, max-age=3600'}});
- if(url.pathname==='/api/config')return json({googleMapsEmbedKey:env.GOOGLE_MAPS_EMBED_KEY||null,sdkKey:env.MATTERPORT_SDK_KEY||null,matterportConfigured:!!(env.MATTERPORT_API_KEY&&env.MATTERPORT_API_TOKEN),vexcelConfigured:!!env.VEXCEL_API_KEY});
+ if(url.pathname==='/api/config')return json({recommendationsConfigured:!!env.OPENROUTER_API_KEY,googleMapsEmbedKey:env.GOOGLE_MAPS_EMBED_KEY||null,sdkKey:env.MATTERPORT_SDK_KEY||null,matterportConfigured:!!(env.MATTERPORT_API_KEY&&env.MATTERPORT_API_TOKEN),vexcelConfigured:!!env.VEXCEL_API_KEY});
+ if(url.pathname==='/api/recommend'){
+  if(request.method!=='POST')return json({ok:false,code:'method'},405);
+  const origin=request.headers.get('origin');if(origin&&origin!==url.origin)return json({ok:false,code:'origin'},403);
+  if(!request.headers.get('content-type')?.startsWith('application/json'))return json({ok:false,code:'invalid'},415);
+  if(!env.OPENROUTER_API_KEY)return json({ok:false,code:'not_configured'},503);
+  if(Number(request.headers.get('content-length'))>4096)return json({ok:false,code:'invalid'},413);
+  if(Date.now()-matchWindowStart>60000){matchWindowStart=Date.now();matchWindowCount=0}
+  if(activeMatchRequests>=2||matchWindowCount>=6)return json({ok:false,code:'busy'},429);
+  let input;try{const body=await request.text();if(body.length>4096)return json({ok:false,code:'invalid'},413);input=normalizeMatchInput(JSON.parse(body))}catch{return json({ok:false,code:'invalid'},400)}
+  activeMatchRequests++;matchWindowCount++;
+  const requestId=crypto.randomUUID().slice(0,8),startedAt=Date.now();
+  const log=(event,details={})=>{if(env.HOMEFIT_AGENT_DEBUG!=='0')console.info('[HomeFit agent '+requestId+'] '+event+' '+JSON.stringify(details))};
+  log('started',{model:env.OPENROUTER_MODEL||'openrouter/free'});
+  const signal=AbortSignal.any([request.signal,AbortSignal.timeout(65000)]);
+  try{
+   const loadScan=async id=>{if(signal.aborted)throw new Error();if(modelCache.has(id))return modelCache.get(id);const scanSignal=AbortSignal.any([signal,AbortSignal.timeout(6500)]);const result=await modelDetails(env,id,(address,options)=>fetch(address,{...options,signal:scanSignal}));if(result.ok){if(modelCache.size>=100)modelCache.delete(modelCache.keys().next().value);modelCache.set(id,result)}return result};
+   const result=await recommendProperties(CATALOG.properties,input,{runAgent:args=>runMatchAgent(env,{...args,signal,onEvent:log}),loadScan,onEvent:log,resolvePlace:args=>resolveMatchPlace(args,env)});
+   log('completed',{status:result.status||'matched',matches:result.matches.length,elapsedMs:Date.now()-startedAt});return json(result);
+  }catch(error){log('failed',{type:signal.aborted?'cancelled_or_timeout':/^[a-zA-Z_]{1,50}$/.test(error?.name||'')?error.name:'Error',code:['invalid','limit','incomplete','ERR_MODULE_NOT_FOUND'].includes(error?.code)?error.code:undefined,status:Number.isInteger(error?.statusCode)?error.statusCode:Number.isInteger(error?.status)?error.status:undefined,elapsedMs:Date.now()-startedAt});return json({ok:false,code:error?.code==='invalid'?'invalid':error?.statusCode===429?'busy':'unavailable'},error?.code==='invalid'?400:error?.statusCode===429?429:502)}
+  finally{activeMatchRequests--}
+ }
  if(url.pathname==='/api/discovery'){
   const result=await vexcelDiscover(env);
   if(!result.ok)return json(result,502);

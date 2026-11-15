@@ -54,6 +54,7 @@ function petSummary(p){if(p.noPets===true)return 'No pets allowed in the recorde
 function parkingSummary(p){if(p.noParking===true)return 'No parking available in the recorded policy';if(!p.parking.length)return 'Not reported';return [...new Set(p.parking.map(x=>x.type.replace(/([a-z])([A-Z])/g,'$1 $2')))].join(', ')}
 function parkingFee(p){const fees=p.parking.filter(x=>x.minFee!=null);return fees.length?'Recorded starting fee: '+money(Math.min(...fees.map(x=>x.minFee)))+'/space; frequency not reported':'Parking fees not reported'}
 function renderComparison(){
+ renderMatchContext();
  const items=entries();$('exportButton').hidden=!items.length;$('exportButton').textContent=items.length===1?'Download property':'Download shortlist';
  $('comparisonHeading').textContent='Your shortlist.';
  $('comparisonSubtitle').textContent=items.length===1?'Your selected floor plan. Add another property whenever you’re ready.':'Your selected floor plans, side by side.';
@@ -61,7 +62,7 @@ function renderComparison(){
  const insights=comparisonInsights(items);
  const row=(label,fn)=>'<tr><th scope="row">'+label+'</th>'+items.map(x=>'<td>'+fn(x)+'</td>').join('')+'</tr>';
  const min=Math.min(...items.map(x=>x.plan.rentMin));
- let html='<div class="compare-scroll '+(items.length===1?'single':'')+'"><table class="comparison-table '+(items.length===1?'one':items.length===2?'two':'')+'"><caption class="sr-only">Selected apartment properties and floor plans</caption><thead><tr><th scope="col">THE SHORTLIST</th>'+items.map(({property:p,plan})=>'<th scope="col"><button class="shortlist-image-link" data-details="'+p.id+'" data-plan="'+plan.id+'" aria-label="View details for '+escape(p.name)+'">'+photo(p,'compare-photo',false)+'</button><div class="city-label">'+escape(p.city)+'</div><h2 class="compare-property-name">'+escape(p.name)+'</h2><span class="muted">'+escape(p.address)+'</span><label class="plan-field"><span>Available floor plans</span><select class="plan-select" data-compare-plan="'+p.id+'" aria-label="Shortlisted floor plan at '+escape(p.name)+'">'+planOptions(p.plans,plan)+'</select></label><div class="table-actions"><button class="secondary" data-tour="'+p.id+'" data-plan="'+plan.id+'">'+tourIcon+'3D tour</button><button class="text-button" data-furnish="'+p.id+'" data-plan="'+plan.id+'">Furnish in 3D</button><button class="text-button" data-remove="'+p.id+'">Remove</button></div></th>').join('')+'</tr></thead><tbody>';
+ let html='<div class="compare-scroll '+(items.length===1?'single':'')+'"><table class="comparison-table '+(items.length===1?'one':items.length===2?'two':'')+'"><caption class="sr-only">Selected apartment properties and floor plans</caption><thead><tr><th scope="col">THE SHORTLIST</th>'+items.map(({property:p,plan})=>'<th scope="col"><button class="shortlist-image-link" data-details="'+p.id+'" data-plan="'+plan.id+'" aria-label="View details for '+escape(p.name)+'">'+photo(p,'compare-photo',false)+'</button><div class="city-label">'+escape(p.city)+'</div><h2 class="compare-property-name">'+escape(p.name)+'</h2><span class="muted">'+escape(p.address)+'</span><label class="plan-field"><span>Available floor plans</span><select class="plan-select" data-compare-plan="'+p.id+'" aria-label="Shortlisted floor plan at '+escape(p.name)+'">'+planOptions(p.plans,plan)+'</select></label><div class="table-actions"><button class="secondary" data-tour="'+p.id+'" data-plan="'+plan.id+'">'+tourIcon+'3D tour</button><button class="text-button" data-furnish="'+p.id+'" data-plan="'+plan.id+'">Furnish in 3D</button><button class="text-button" data-remove="'+p.id+'">Remove</button></div>'+matchColumnMarkup(p,plan)+'</th>').join('')+'</tr></thead><tbody>';
  html+=row('ASKING RENT',({plan})=>'<div class="rent">'+rentText(plan)+'<small>/mo</small></div>'+(items.length>1&&plan.rentMin===min?'<span class="winner">Lowest starting rent</span>':'')+'<span class="rent-sub">Whole-unit pricing · excludes fees</span>');
  html+=row('FLOOR PLAN',({plan})=>'<strong>'+escape(plan.name)+'</strong><br>'+bedsText(plan.beds)+' · '+number(plan.baths)+' bath');
  html+=row('REPORTED AREA',({plan})=>sqftText(plan));
@@ -200,11 +201,12 @@ async function init(){
   if(shared)restored=shared.split(',').map(x=>{const [propertyId,planId]=x.split(':').map(Number);return {propertyId,planId}});
   else{try{restored=JSON.parse(localStorage.getItem('homefit-shortlist-v1')||'[]')}catch{}}
   selected=normalizeSelections(restored,properties);for(const x of selected)preferred[x.propertyId]=x.planId;
-  render();showConnections(defaultConnections());showView(location.hash==='#compare'?'comparison':'explore');
+  restoreMatchRecommendation();render();showConnections(defaultConnections());showView(location.hash==='#compare'?'comparison':'explore');
   if(config.matterportConfigured||config.vexcelConfigured)checkConnections();
  }catch{$('cards').innerHTML='<div class="empty"><h2>The catalog couldn’t load.</h2><p>Please refresh the page to try again.</p><button class="primary" id="retryCatalog">Try again</button></div>';$('resultCount').textContent='Catalog unavailable';$('retryCatalog').onclick=init;}
 }
 /*__LIVE__*/
 /*__CAPABILITIES__*/
 /*__FURNITURE__*/
+/*__MATCHES__*/
 init();

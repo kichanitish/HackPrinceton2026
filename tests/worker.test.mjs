@@ -42,3 +42,12 @@ test('only the website-restricted Google embed key is exposed through browser co
  assert.equal(config.googleMapsEmbedKey,'public-embed-key');assert.ok(!JSON.stringify(config).includes('private-'));
  const missing=await (await worker.fetch(new Request('https://homefit.test/api/config'),{})).json();assert.equal(missing.googleMapsEmbedKey,null);
 });
+test('recommendation API requires same-origin JSON POST and keeps the model credential server-only',async()=>{
+ const base='https://homefit.test/api/recommend',env={OPENROUTER_API_KEY:'server-model-secret'};
+ assert.equal((await worker.fetch(new Request(base),env)).status,405);
+ assert.equal((await worker.fetch(new Request(base,{method:'POST',headers:{origin:'https://other.test','content-type':'application/json'},body:'{}'}),env)).status,403);
+ assert.equal((await worker.fetch(new Request(base,{method:'POST',body:'{}'}),env)).status,415);
+ const unavailable=await worker.fetch(new Request(base,{method:'POST',headers:{'content-type':'application/json'},body:'{}'}),{});assert.equal(unavailable.status,503);
+ const invalid=await worker.fetch(new Request(base,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({city:'Unknown'})}),env);assert.equal(invalid.status,400);
+ const config=await (await worker.fetch(new Request('https://homefit.test/api/config'),env)).json();assert.equal(config.recommendationsConfigured,true);assert.ok(!JSON.stringify(config).includes('server-model-secret'));
+});
