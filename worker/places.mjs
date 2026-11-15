@@ -19,7 +19,7 @@ export async function resolveMatchPlace({query,city,choiceId=null},env={},fetche
  try{
   const url=new URL('/api/',env.HOMEFIT_GEOCODER_URL||'https://photon.komoot.io');
   url.search=new URLSearchParams({q:query.trim(),limit:'5',lang:'en',lat:String(cityCenters[city]?.lat||34.0522),lon:String(cityCenters[city]?.lng||-118.2437)}).toString();
-  const response=await fetcher(url,{headers:{accept:'application/json','user-agent':'HomeFit/0.2 apartment-search'},signal:AbortSignal.timeout(7000)});if(!response.ok)return {status:'unavailable'};
+  const response=await fetcher(url,{headers:{accept:'application/json','user-agent':'Scout/0.4 property-search'},signal:AbortSignal.timeout(7000)});if(!response.ok)return {status:'unavailable'};
   const data=await response.json(),places=[],houseNumber=query.trim().match(/^(\d+[A-Za-z]?)\s+\S/)?.[1]?.toLowerCase();
   for(const feature of (data.features||[]).slice(0,5)){
    const p=feature.properties||{},coordinates=feature.geometry?.coordinates;if(!Array.isArray(coordinates))continue;

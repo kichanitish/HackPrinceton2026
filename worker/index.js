@@ -1,7 +1,10 @@
 /*__API__*/
 const PAGE = "__PAGE__";
 const CATALOG = "__CATALOG__";
-const modelIds=new Set(CATALOG.properties.flatMap(p=>p.plans.flatMap(plan=>plan.tours.map(t=>t.id))));
+const COMMERCIAL = "__COMMERCIAL__";
+const BUSINESS_PROFILES = "__BUSINESS_PROFILES__";
+const ALL_PROPERTIES=[...CATALOG.properties,...COMMERCIAL.properties];
+const modelIds=new Set(ALL_PROPERTIES.flatMap(p=>p.plans.flatMap(plan=>plan.tours.map(t=>t.id))));
 let activeMatchRequests=0,matchWindowStart=0,matchWindowCount=0;
 let cachedCheck=null,checkTime=0,pendingCheck=null;
 const coverageCache=new Map(),modelCache=new Map(),imageCache=new Map();let coverageAudit=null,auditJob=null;const imageVerified=new Set();
@@ -19,25 +22,25 @@ function modelResponse(result,url){
 export default {async fetch(request,env={}){
  const url=new URL(request.url);
  if(url.pathname.startsWith('/bundle/'))return env.ASSETS?env.ASSETS.fetch(request):json({error:'Bundle assets are not configured on this host'},404);
- if(url.pathname==='/api/catalog')return new Response(JSON.stringify(CATALOG),{headers:{...JSON_HEADERS,'cache-control':'private, max-age=3600'}});
- if(url.pathname==='/api/config')return json({recommendationsConfigured:!!env.OPENROUTER_API_KEY,googleMapsEmbedKey:env.GOOGLE_MAPS_EMBED_KEY||null,sdkKey:env.MATTERPORT_SDK_KEY||null,matterportConfigured:!!(env.MATTERPORT_API_KEY&&env.MATTERPORT_API_TOKEN),vexcelConfigured:!!env.VEXCEL_API_KEY});
+ if(url.pathname==='/api/catalog')return new Response(JSON.stringify({...CATALOG,commercialProperties:COMMERCIAL.properties,commercialStats:COMMERCIAL.stats}),{headers:{...JSON_HEADERS,'cache-control':'private, max-age=3600'}});
+ if(url.pathname==='/api/config')return json({recommendationsConfigured:!!(env.OPENAI_API_KEY||env.OPENROUTER_API_KEY),googleMapsEmbedKey:env.GOOGLE_MAPS_EMBED_KEY||null,sdkKey:env.MATTERPORT_SDK_KEY||null,matterportConfigured:!!(env.MATTERPORT_API_KEY&&env.MATTERPORT_API_TOKEN),vexcelConfigured:!!env.VEXCEL_API_KEY});
  if(url.pathname==='/api/recommend'){
   if(request.method!=='POST')return json({ok:false,code:'method'},405);
   const origin=request.headers.get('origin');if(origin&&origin!==url.origin)return json({ok:false,code:'origin'},403);
   if(!request.headers.get('content-type')?.startsWith('application/json'))return json({ok:false,code:'invalid'},415);
-  if(!env.OPENROUTER_API_KEY)return json({ok:false,code:'not_configured'},503);
+  if(!env.OPENAI_API_KEY&&!env.OPENROUTER_API_KEY)return json({ok:false,code:'not_configured'},503);
   if(Number(request.headers.get('content-length'))>4096)return json({ok:false,code:'invalid'},413);
   if(Date.now()-matchWindowStart>60000){matchWindowStart=Date.now();matchWindowCount=0}
   if(activeMatchRequests>=2||matchWindowCount>=6)return json({ok:false,code:'busy'},429);
   let input;try{const body=await request.text();if(body.length>4096)return json({ok:false,code:'invalid'},413);input=normalizeMatchInput(JSON.parse(body))}catch{return json({ok:false,code:'invalid'},400)}
   activeMatchRequests++;matchWindowCount++;
   const requestId=crypto.randomUUID().slice(0,8),startedAt=Date.now();
-  const log=(event,details={})=>{if(env.HOMEFIT_AGENT_DEBUG!=='0')console.info('[HomeFit agent '+requestId+'] '+event+' '+JSON.stringify(details))};
-  log('started',{model:env.OPENROUTER_MODEL||'openrouter/free'});
+  const log=(event,details={})=>{if((env.SCOUT_AGENT_DEBUG??env.HOMEFIT_AGENT_DEBUG)!=='0')console.info('[Scout agent '+requestId+'] '+event+' '+JSON.stringify(details))};
+  log('started',{providers:matchModelProviders(env)});
   const signal=AbortSignal.any([request.signal,AbortSignal.timeout(65000)]);
   try{
    const loadScan=async id=>{if(signal.aborted)throw new Error();if(modelCache.has(id))return modelCache.get(id);const scanSignal=AbortSignal.any([signal,AbortSignal.timeout(6500)]);const result=await modelDetails(env,id,(address,options)=>fetch(address,{...options,signal:scanSignal}));if(result.ok){if(modelCache.size>=100)modelCache.delete(modelCache.keys().next().value);modelCache.set(id,result)}return result};
-   const result=await recommendProperties(CATALOG.properties,input,{runAgent:args=>runMatchAgent(env,{...args,signal,onEvent:log}),loadScan,onEvent:log,resolvePlace:args=>resolveMatchPlace(args,env)});
+   const result=await recommendProperties(ALL_PROPERTIES,input,{runAgent:args=>runMatchAgent(env,{...args,signal,onEvent:log}),loadScan,onEvent:log,resolvePlace:args=>resolveMatchPlace(args,env),businessProfiles:BUSINESS_PROFILES});
    log('completed',{status:result.status||'matched',matches:result.matches.length,elapsedMs:Date.now()-startedAt});return json(result);
   }catch(error){log('failed',{type:signal.aborted?'cancelled_or_timeout':/^[a-zA-Z_]{1,50}$/.test(error?.name||'')?error.name:'Error',code:['invalid','limit','incomplete','ERR_MODULE_NOT_FOUND'].includes(error?.code)?error.code:undefined,status:Number.isInteger(error?.statusCode)?error.statusCode:Number.isInteger(error?.status)?error.status:undefined,elapsedMs:Date.now()-startedAt});return json({ok:false,code:error?.code==='invalid'?'invalid':error?.statusCode===429?'busy':'unavailable'},error?.code==='invalid'?400:error?.statusCode===429?429:502)}
   finally{activeMatchRequests--}
@@ -54,7 +57,7 @@ export default {async fetch(request,env={}){
   return json(name?{tool:result.tools.find(t=>t.name===name)||null}:{tools:result.tools.map(t=>({name:t.name,description:t.description?.slice(0,450)}))});
  }
  if(url.pathname==='/api/vexcel-debug'){
-  const p=CATALOG.properties.find(x=>x.id===Number(url.searchParams.get('id')));if(!p)return json({error:'Unknown property'},400);
+  const p=ALL_PROPERTIES.find(x=>x.id===Number(url.searchParams.get('id')));if(!p)return json({error:'Unknown property'},400);
   const result=await vexcelRpc(env,'ortho_imagery_collections',{wkt:'POINT('+p.lng+' '+p.lat+')',srid:4326,include:['layer','collection','first-capture-date','last-capture-date','min-gsd','max-zoom','pretty-name','geometry'],'page-size':20});
   const esc=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   return new Response('<!doctype html><title>Vexcel sample coverage</title><h1>'+esc(p.name)+'</h1><h2>Result</h2><p>'+esc(JSON.stringify({ok:result.ok,state:result.state,keys:Object.keys(result.data||{})}))+'</p>'+Object.entries(result.data||{}).map(([k,v])=>'<h2>'+esc(k)+'</h2><p>'+esc(JSON.stringify(v).slice(0,5000))+'</p>').join(''),{headers:{'content-type':'text/html'}});
@@ -64,11 +67,11 @@ export default {async fetch(request,env={}){
   return auditResponse({...coverageAudit,imageVerifiedPropertyIds:[...imageVerified]},url);
  }
  if(url.pathname==='/api/coverage'){
-  const p=CATALOG.properties.find(x=>x.id===Number(url.searchParams.get('id')));if(!p)return json({error:'Unknown property'},400);
+  const p=ALL_PROPERTIES.find(x=>x.id===Number(url.searchParams.get('id')));if(!p)return json({error:'Unknown property'},400);
   return json(await coverageFor(env,p));
  }
  if(url.pathname==='/api/aerial'){
-  const p=CATALOG.properties.find(x=>x.id===Number(url.searchParams.get('id')));if(!p)return json({error:'Unknown property'},400);
+  const p=ALL_PROPERTIES.find(x=>x.id===Number(url.searchParams.get('id')));if(!p)return json({error:'Unknown property'},400);
   const coverage=await coverageFor(env,p);if(!coverage.ok)return json(coverage,502);
   const chosen=url.searchParams.get('collection');const collection=coverage.collections.find(c=>c.id===chosen)||(!chosen?coverage.collections[0]:null);if(!collection)return json({ok:false,state:'Collection unavailable'},404);
   const context=url.searchParams.get('context')==='1',cacheKey=p.id+':'+collection.id+':'+context;

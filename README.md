@@ -1,19 +1,20 @@
-# HomeFit
+# Scout
 
-A minimal property comparison app using the supplied CoStar apartment dataset.
+A minimal home and business-space comparison app using the supplied CoStar snapshot.
 
 ## Open immediately
 
-Open **HomeFit.html** in a browser. This standalone version needs no installation or server. Browsing, filters, the comparison shortlist, floor-plan selection, CSV export and ordinary Matterport embeds work from that file. Photos and Matterport playback still need internet access and a publicly playable scan. SDK controls and server API checks require the server version.
+Open **Scout.html** in a browser. This standalone version needs no installation or server. Browsing, filters, the comparison shortlist, floor-plan selection, CSV export and ordinary Matterport embeds work from that file. Photos and Matterport playback still need internet access and a publicly playable scan. SDK controls and server API checks require the server version.
 
 ## Run the server version
 
-Requires Node.js 22.6+ and Python 3 only if regenerating the dataset. No npm dependencies are needed.
+Requires Node.js 22.6+ and Python 3 only if regenerating the dataset. Install npm dependencies for the LangChain recommendation harness.
 
 ```sh
 cd /Users/nitishks/Downloads/homefit
 cp .env.example .env
 # Fill in .env locally with your keys. Never commit it.
+npm install
 npm run dev
 ```
 
@@ -47,15 +48,15 @@ Aerial galleries choose the most recent returned Vexcel collection by capture-en
 
 ## Scan tools
 
-Each opened scan discovers its own published views and feature flags. API room dimensions are listed separately from manual ruler measurements; API dimensions do not imply saved measurement lines or room labels inside the viewer. **Measure manually** opens Matterport's manual measurement mode; **Remove scanned furniture** switches to an existing published defurnished view, with a return to the original. A published-view selector exposes alternate views when returned. Publisher-disabled Dollhouse, Floor plan and measurement controls are respected. View-mode navigation is provided only by Matterport’s native controls; HomeFit does not duplicate Inside, Floor plan or Dollhouse buttons. Native toolbar/menu features remain present for tags, floor selection, sharing, search, fullscreen and other tools supported by the scan. HomeFit does not process new defurnished versions or enable owner-disabled features.
+Each opened scan discovers its own published views and feature flags. API room dimensions are listed separately from manual ruler measurements; API dimensions do not imply saved measurement lines or room labels inside the viewer. **Measure manually** opens Matterport's manual measurement mode; **Remove scanned furniture** switches to an existing published defurnished view, with a return to the original. A published-view selector exposes alternate views when returned. Publisher-disabled Dollhouse, Floor plan and measurement controls are respected. View-mode navigation is provided only by Matterport’s native controls; Scout does not duplicate Inside, Floor plan or Dollhouse buttons. Native toolbar/menu features remain present for tags, floor selection, sharing, search, fullscreen and other tools supported by the scan. Scout does not process new defurnished versions or enable owner-disabled features.
 
 The collapsed **Tools available in this scan** panel explains confirmed, unavailable and unverified capabilities. A failed optional SDK lookup does not disable a connected viewer or prove a feature absent. Guided-tour discovery waits for the viewer's playing phase; unverified playback can be attempted without claiming saved stops exist. Switching a linked scan clears old capability state and subscriptions. Capabilities are checked on opening each scan; the full catalog has not been exhaustively audited.
 
 ## 3D furniture studio
 
-Use **Furnish in 3D** in property details, comparison, or an ordinary tour. It opens a locally hosted Matterport Bundle SDK viewer with a compact studio beside the scan on desktop. Add a detailed Scandinavian sofa, black or burgundy armchair, or one of three coffee tables from Matterport’s examples. A simple bed, desk and dining table remain available; saved legacy shapes still restore. Use the colored transform handles to move and rotate, turn 90 degrees, edit dimensions in feet, or use precise movement and height controls. Detailed models load through the Bundle SDK GLTF loader from Matterport’s versioned public sample-asset CDN, including their textures. HomeFit centers and grounds them, and scales them to editable staging dimensions. The six selected models are listed as CC BY 4.0 in Matterport’s attribution table. Credits are included in the studio and THIRD_PARTY_ASSETS.md. The model-fit component preserves movement, rotation, resizing and browser-local arrangements. Network loading failures are shown explicitly rather than silently substituting a box. No LLM key is required.
+Open **3D tour**, **Explore in 3D**, or **Step inside**. Tours open with the furniture studio available by default, using a locally hosted Matterport Bundle SDK viewer with a compact studio beside the scan on desktop. Add a detailed Scandinavian sofa, black or burgundy armchair, or one of three coffee tables from Matterport’s examples. A simple bed, desk and dining table remain available; saved legacy shapes still restore. Use the colored transform handles to move and rotate, turn 90 degrees, edit dimensions in feet, or use precise movement and height controls. Detailed models load through the Bundle SDK GLTF loader from Matterport’s versioned public sample-asset CDN, including their textures. Scout centers and grounds them, and scales them to editable staging dimensions. The six selected models are listed as CC BY 4.0 in Matterport’s attribution table. Credits are included in the studio and THIRD_PARTY_ASSETS.md. The model-fit component preserves movement, rotation, resizing and browser-local arrangements. Network loading failures are shown explicitly rather than silently substituting a box. No LLM key is required.
 
-Arrangements save automatically per scan in browser storage, with an explicit Save button as well. Reopening a scan restores its pieces. No Matterport model mutations or uploads are performed. Standard 3D tours continue to use the Embed SDK; the studio uses Bundle SDK release `26.10.4_webgl-1728-g1cd7e0997a`. Room bounds provide an initial floor height; the current-view fallback estimates floor level from camera height. Walls, doors and circulation are not automatically validated. Existing scanned furniture remains visible. This is visual staging, not a clearance guarantee.
+Arrangements save automatically per scan in browser storage, with an explicit Save button as well. Reopening a scan restores its pieces. No Matterport model mutations or uploads are performed. The default 3D studio uses Bundle SDK release `26.10.4_webgl-1728-g1cd7e0997a`. Room bounds provide an initial floor height; the current-view fallback estimates floor level from camera height. Walls, doors and circulation are not automatically validated. Existing scanned furniture remains visible. This is visual staging, not a clearance guarantee.
 
 The personal matching form and the 2D rectangular planner have been removed.
 
@@ -89,7 +90,7 @@ node scripts/check-access.mjs
 
 check-access.mjs reads optional .env and writes a sanitized result to data/api-access.json. It makes only read queries and MCP initialization requests; it does not buy assets or mutate models.
 
-To regenerate the contact-free catalog from the original adjacent kit:
+To regenerate the catalog from the original adjacent kit:
 
 ```sh
 npm run data
@@ -113,7 +114,7 @@ The kit is a November 12, 2026 snapshot selected around Matterport captures, not
 
 For hosted publication, use the existing Sites project, build with node scripts/build.mjs, validate with node scripts/validate-artifact.mjs, push the exact source, and package dist/ through the Sites workflow. The source and generated output contain no server credentials.
 
-When a floor plan links multiple Matterport scans, HomeFit checks their live model data on demand and exposes one preferred scan. Scans with room measurements rank first, followed by measured-room count, captured total area, dimension detail and room metadata. Tours, furniture staging, comparison details and CSV exports use that selection. If no scan exposes measurements, a scan with accessible metadata remains available. This does not remove other floor plans or alter the original catalog links. Saved furniture remains associated with its original model.
+When a floor plan links multiple Matterport scans, Scout checks their live model data on demand and exposes one preferred scan. Scans with room measurements rank first, followed by measured-room count, captured total area, dimension detail and room metadata. Tours, furniture staging, comparison details and CSV exports use that selection. If no scan exposes measurements, a scan with accessible metadata remains available. This does not remove other floor plans or alter the original catalog links. Saved furniture remains associated with its original model.
 
 Street View setup: enable **Maps Embed API** in a Google Cloud project with billing enabled. Create a browser API key restricted to Maps Embed API and the app's website referrers (`http://localhost:4317/*`, plus your deployed HTTPS domain). Add `GOOGLE_MAPS_EMBED_KEY=your_key` to the ignored local `.env` and restart `npm run dev`. This browser key is intentionally returned by `/api/config`; do not reuse a server credential. See https://developers.google.com/maps/documentation/embed/get-api-key.
 
@@ -133,14 +134,14 @@ cd ~/Downloads/homefit
 npm run ai:install
 ```
 
-Add `OPENROUTER_API_KEY=your_key` to the ignored `.env`. Optionally set `OPENROUTER_MODEL` (default `openrouter/free`, which requires a tool-capable free route). Restart `npm run dev`. No model key is returned to the browser. LangChain is a framework; model inference comes from OpenRouter. LangSmith tracing is off unless separately configured. Free-model availability, tool-calling reliability and rate limits depend on OpenRouter; use a suitable explicit model for a reliable demo if needed.
+Add `OPENAI_API_KEY` to the ignored `.env` for the primary LangChain ChatOpenAI integration. Set `OPENAI_MODEL` (default `gpt-5.5`); Scout's `AGENT_MODEL_OPENAI` setting is also accepted. Keep `OPENROUTER_API_KEY` and optionally `OPENROUTER_MODEL` (default `openrouter/free`) for automatic fallback on provider errors, timeouts, or invalid structured output. With only an OpenRouter key, it remains the primary available provider. Restart `npm run dev` after changing environment values. No model key is returned to the browser. LangSmith tracing is off unless separately configured. Free-model availability and tool reliability depend on OpenRouter.
 
 A successful search updates and opens **My shortlist** directly. The needs dialog explains that an existing list will be replaced; **Undo shortlist update** restores it. Manual and agent selections use the same page and controls. Recommended layouts add only a concise **Agent summary** with supporting facts and a tradeoff; there are no separate result cards or best-match badges. A summary disappears when its particular layout changes, while unchanged recommended layouts retain theirs. Matches are saved in the same browser; shared shortlist URLs contain selections but do not include personalized needs or recommendations. Closing the dialog cancels a pending request. Empty results and errors preserve the current shortlist.
 
 The API accepts same-origin JSON POSTs, limits body size, bounds model calls/tool use, permits two concurrent requests and six requests per minute per server process, and applies a 65-second request timeout. The optional agent packages are loaded lazily so catalog browsing/building/testing still works before installation. This integration runs on the local Node server; a future hosted Worker deployment must bundle the npm dependencies before enabling the AI route.
 
 
-Agent debugging is **server-terminal only**. In the Terminal running `npm run dev`, look for `[HomeFit agent <request-id>]`. Events include `started`, `model.step` (tool names and token counts when provided), `search.completed` (applied criteria and candidate counts), `scans.completed` (measurement availability), `selection.completed` (ordered picks and their factual summaries), and `completed`/`failed` (timing and sanitized failure details). No debug panel or log payload is sent to the website. Logs do not contain credentials, raw free-text needs, model response bodies, or private internal reasoning. Set `HOMEFIT_AGENT_DEBUG=0` in `.env` and restart to turn these traces off; logs are on by default. A live OpenRouter run was verified to populate three properties in My shortlist automatically.
+Agent debugging is **server-terminal only**. In the Terminal running `npm run dev`, look for `[Scout agent <request-id>]`. Events include `started`, `model.step` (tool names and token counts when provided), `search.completed` (applied criteria and candidate counts), `scans.completed` (measurement availability), `selection.completed` (ordered picks and their factual summaries), and `completed`/`failed` (timing and sanitized failure details). No debug panel or log payload is sent to the website. Logs do not contain credentials, raw free-text needs, model response bodies, or private internal reasoning. Set `SCOUT_AGENT_DEBUG=0` (or the compatible `HOMEFIT_AGENT_DEBUG=0`) in `.env` and restart to turn these traces off; logs are on by default. A live OpenRouter run was verified to populate three properties in My shortlist automatically.
 
 
 The recommendation harness first classifies scope and extracts preferences through a forced, typed `analyze_preferences` tool call. Searches cannot bypass that step. Off-topic questions get a polite service-specific response; detached houses, purchases, unsupported cities, mandatory unsupported amenities, conflicting requirements, per-person budget ambiguity, applications/payments and commute-time constraints prompt clarification. No such response changes the shortlist. Derived filters include pets, parking, explicit minimum area and maximum bedroom counts, and ZIP codes actually present in the request. Soft preferences can prioritize price, space or proximity; the model must not invent numeric requirements or claim unknown amenities are verified.
@@ -156,3 +157,49 @@ Live checks verified both a LAX radius and a general **Santa Monica Pier** searc
 Ranking reliability: after the forced preference/scope analysis succeeds, code runs the validated catalog search and checks scan data for provisional picks. The model receives at most 12 distinct candidate properties with numerical facts and evidence keys, rather than the repeated full evidence prose from 24 layouts. Ranking is a single forced `finish_shortlist` call with a 15-second deadline and 900-token output budget. A missing tool call, invalid IDs/selection, provider failure or ranking timeout falls back to the existing validated filter order (rent, space or proximity), retaining all hard constraints and source-backed summaries. Logs show `ranking.started`, model `finishReason`, and `selection.fallback` when used; results record `selectionMethod`. Empty searches and three-or-fewer candidates need no model ranking call. Cancelled requests never apply a fallback, and an unsuccessful scope/preference analysis never falls back to guessed requirements. Scope analysis has a 30-second deadline; scan lookups have a shared 6.5-second deadline across their metadata queries.
 
 Preference parsing tolerates omitted optional nested fields and safe formatting such as numeric strings, explicit `"true"`/`"false"`, null optional values, and comma-separated ZIP codes. Parsing/normalization is server-side, separate from the plain JSON Schema sent to the model. Invalid numbers, booleans, unsupported enum values or malformed requirements trigger a polite clarification, not a `ZodError` response or a search with dropped constraints. `preferences.invalid` terminal events contain only field paths, validation codes and received types; no raw arguments or values are logged. Regression tests exercise both partial responses and malformed preferences through the installed LangChain/OpenRouter adapter.
+
+## Scout integration: homes and business spaces
+
+The `scout-agent` source is preserved under `scout/`. Scout reuses its commercial data preparation and business-use profiles inside the existing Node application; no second Python web server or separate chat interface is required.
+
+**Homes / Business spaces** switches the browsing filters and recommendation form. The commercial snapshot contains 3,949 advertised spaces across 561 properties; 556 properties have source photos, and 3,505 spaces have linked scans. Missing photos, asking rates and scans remain unavailable. Space use, area, ground-floor requirements and recorded fit-out claims refine commercial matching. Context includes nearby recorded apartment units, office buildings and historical same-use/service lease rates. Tenant-company employee totals are explicitly not verified on-site staffing and do not determine ranking.
+
+Commercial prices are monthly base-rent estimates from quoted annual rate × minimum reported area ÷ 12. Lease service type stays visible; operating charges, availability, actual leasable area, zoning, permits and equipment require confirmation. A building-level scan may show another suite. Nearby catalog context is incomplete and does not establish foot traffic, demand or revenue.
+
+Both modes use the same property details, Street View, Vexcel aerial gallery, supported Matterport tools and three-property shortlist. Recommendations add only short factual summaries to that shortlist. Explicit constraints remain mandatory; the harness asks before switching search mode or expanding a location radius. The Scout top-ten interface and automatic constraint relaxation are not used.
+
+To rebuild the commercial snapshot from the adjacent `costar-hackathon-kit` with Python's standard library:
+
+```sh
+npm run data:commercial
+npm run build
+```
+
+Debugging remains terminal-only: `model.provider`, `model.provider_completed` and `model.provider_fallback` identify the selected provider/model without logging keys or private model reasoning. Scope analysis has a 32-second parent deadline; provider attempts are bounded within it. Ranking has a 15-second parent deadline, followed by validated deterministic selection if needed. Provider-routing tests exercise the installed LangChain adapters with mocked HTTP responses, including OpenAI success and OpenRouter failover.
+
+Live browser checks after integration verified home recommendations, a coffee-shop request producing three commercial shortlist entries, property photos and commercial Vexcel retrieval. They confirm the combined workflow; provider-selection details remain in the server terminal.
+
+## Property contacts
+
+Home and commercial properties show separate Owner, Management and Leasing contact rows in My shortlist, plus a Property contacts section in details. Names, company names, phone numbers/extensions and email addresses appear when recorded, with click-to-call and email links. Two contacts per group appear initially; additional contacts remain accessible in details. Missing roles are explicitly unreported. Recorded owners and owners retain their distinct source labels; brokers are never presented as landlords. Company phone lines are labeled separately from direct contact numbers.
+
+Contacts are joined from property-specific commercial listing records, commercial-property contact references and company locations. Portfolio listing brokers can apply to their advertised spaces; owner and management contacts are attached only to the explicitly associated property. Apartment management companies remain available even without individual contacts. Explicit `displayInProduct: false` listing records are omitted. All details reflect the supplied snapshot, not current verification. Both data preparation scripts include extraction; `npm run data:contacts` updates contacts alone while preserving the existing floor plans and selected scans.
+
+## Description-first search
+
+The homepage uses one needs bar rather than the previous “Find my top 3” button and preference dialog. Users describe their requirements, optionally starting from the one example shown for Homes or Business spaces. Clicking an example fills the bar; Find matches or Enter starts the search (Shift+Enter adds a line). Clarifications and place/radius choices stay inline. Cancel aborts an in-flight request and ignores late responses. Matching still returns up to three validated properties in My shortlist, with factual summaries and Undo. Refine my search returns from the shortlist to the needs bar.
+
+The description drives requirements; browsing budget, room and business-type filters do not silently constrain agent searches. The current city is a fallback, and an explicitly requested supported city or a verified landmark's city is adopted for description-first requests. Ambiguous places, unsupported requirements and search-mode conflicts still require clarification; radius expansion still requires user selection. The manual filters remain available beneath the bar, with aligned responsive fields for commercial use and area.
+
+My shortlist no longer fetches or displays a Matterport interior-measurements row. Measurements remain available in property details and scan tools. Homepage photography changes with Homes / Business spaces; real Pexels photo sources and licensing are recorded in THIRD_PARTY_ASSETS.md.
+
+
+## Scout identity and tour defaults
+
+The app is now Scout, with a compass mark, deep teal, warm ivory and an amber accent. The standalone build is `Scout.html`; `HomeFit.html` remains a compatible copy for existing bookmarks. Existing browser storage keys and saved furniture component names stay compatible, preserving shortlists, recommendations and staged arrangements. Server request traces use `[Scout agent …]`.
+
+Agent summaries omit generic straight-line travel and mandatory-fee reminders, including those in previously saved recommendations. Distances in match strengths remain labeled straight-line; specific property tradeoffs still appear when useful. General source and pricing context remains in property details.
+
+The Pet friendly browsing filter accepts recorded dog or cat policies and excludes explicitly prohibited or unreported pet policies. Pet policy summaries identify the recorded species and available pet rent; a dog-only record does not become a promise that all pets are allowed. Explicit dog/cat requests in agent searches retain their respective species requirements.
+
+Server-backed 3D tours open directly in the Bundle viewer with the Furniture studio expanded. The separate Furnish in 3D actions have been removed. Opening the same active studio reuses its iframe and session, preserving the camera and furniture. Use standard viewer remains an explicit fallback; standalone previews without SDK configuration use the standard viewer. Live Chrome verification confirmed the default studio connected to model ASWK3CoJ75u and enabled Add to room.

@@ -1,5 +1,6 @@
-"""Create a minimal, contact-free apartment catalog from the provided CoStar kit."""
+"""Create the apartment catalog and recorded property contacts from the CoStar kit."""
 import json
+from property_contacts import contact_index, enrich
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 KIT=ROOT.parent/'costar-hackathon-kit'
@@ -33,5 +34,6 @@ for listing in read('apartment-listing'):
  catalog.append({'id':p['id'],'name':p.get('buildingName') or listing.get('buildingName') or street,'address':street,'city':'Houston' if address.get('researchMarketId')==14 else 'Los Angeles','state':address.get('state'),'zip':(address.get('postcode') or '')[:5],'lat':address.get('latitude'),'lng':address.get('longitude'),'photo':photo,'style':label('ApartmentStyleType',ap.get('apartmentStyleType')),'stories':p.get('numStoriesAboveGrade'),'units':listing.get('totalNumUnits'),'plans':plans,'pets':policies,'noPets':profile.get('hasNoPetsAllowed'),'parking':parking,'noParking':profile.get('hasNoParkingAvailable'),'manager':listing.get('propertyManagementCompanyName')})
 catalog.sort(key=lambda x:x['name'].lower())
 out={'snapshotDate':'2026-11-12','properties':catalog,'stats':{'properties':len(catalog),'plans':sum(len(x['plans']) for x in catalog),'cities':sorted({x['city'] for x in catalog})}}
+enrich(out, contact_index(KIT))
 (ROOT/'data/catalog.json').write_text(json.dumps(out,separators=(',',':')))
 print(json.dumps(out['stats']))

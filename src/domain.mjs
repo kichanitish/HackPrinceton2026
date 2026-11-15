@@ -1,11 +1,18 @@
 export function matchingPlans(property, filters={}) {
+ if((property.mode||'home')!==(filters.mode||'home'))return [];
  if(filters.city && property.city!==filters.city)return [];
  const text=[property.name,property.address,property.zip,property.city].join(' ').toLowerCase();
  if(filters.query && !text.includes(filters.query.trim().toLowerCase()))return [];
- if(filters.dogs && (property.noPets===true || !property.pets.some(x=>x.type==='Dog')))return [];
+ if(filters.dogs && (property.noPets===true || !property.pets.some(x=>['Dog','Cat'].includes(x.type))))return [];
  if(filters.parking && (property.noParking===true || !property.parking.length))return [];
  return property.plans.filter(p=>{
-  if(!(p.rentMin>0) || !(p.available>0))return false;
+  if(!(p.available>0)||((property.mode||'home')==='home'&&!(p.rentMin>0)))return false;
+  if(property.mode==='commercial'){
+   const profile=typeof BUSINESS_PROFILES!=='undefined'?BUSINESS_PROFILES[filters.business]:null;
+   if(profile?.uses&&!profile.uses.includes(p.use))return false;
+   if(filters.minSqft&&p.sqftMin<Number(filters.minSqft)||filters.maxSqft&&p.sqftMin>Number(filters.maxSqft))return false;
+   return !filters.budget||(p.rentMin>0&&p.rentMin<=Number(filters.budget));
+  }
   if(filters.beds!==undefined && filters.beds!==''){
    const b=Number(filters.beds);
    if(b===3 ? !(p.beds>=3) : p.beds!==b)return false;
@@ -19,7 +26,7 @@ export function matchingPlans(property, filters={}) {
 }
 export function selectPlan(property, filters, preferredId) {
  const plans=matchingPlans(property,filters);
- return plans.find(p=>p.id===Number(preferredId)) || [...plans].sort((a,b)=>a.rentMin-b.rentMin)[0] || null;
+ return plans.find(p=>p.id===Number(preferredId)) || [...plans].sort((a,b)=>(a.rentMin??Infinity)-(b.rentMin??Infinity))[0] || null;
 }
 export function normalizeSelections(input,properties){
  const selected=[];

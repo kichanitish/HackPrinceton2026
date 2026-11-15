@@ -19,7 +19,7 @@ export async function vexcelDiscover(env,fetcher=fetch){
  if(!env.VEXCEL_API_KEY)return {ok:false,state:'Not configured'};
  try{
   const headers={'content-type':'application/json',accept:'application/json, text/event-stream','X-API-KEY':env.VEXCEL_API_KEY};
-  const init=await fetcher('https://api.vexcelgroup.com/v2/mcp',{method:'POST',headers,body:JSON.stringify({jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'homefit',version:'1.1.0'}}}),signal:AbortSignal.timeout(20000)});
+  const init=await fetcher('https://api.vexcelgroup.com/v2/mcp',{method:'POST',headers,body:JSON.stringify({jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'scout',version:'1.1.0'}}}),signal:AbortSignal.timeout(20000)});
   if(!init.ok)return {ok:false,state:'Discovery failed',httpStatus:init.status};
   const initialized=decodeRpc(await init.text());if(!initialized?.result)return {ok:false,state:'Invalid discovery response'};
   const session=init.headers.get('mcp-session-id');if(session)headers['mcp-session-id']=session;
@@ -53,7 +53,7 @@ export async function vexcelRpc(env,name,args,fetcher=fetch){
  if(!env.VEXCEL_API_KEY)return {ok:false,state:'Not configured'};
  try{
   const headers={'content-type':'application/json',accept:'application/json, text/event-stream','X-API-KEY':env.VEXCEL_API_KEY};
-  const init=await fetcher('https://api.vexcelgroup.com/v2/mcp',{method:'POST',headers,body:JSON.stringify({jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'homefit',version:'1.1.0'}}}),signal:AbortSignal.timeout(20000)});
+  const init=await fetcher('https://api.vexcelgroup.com/v2/mcp',{method:'POST',headers,body:JSON.stringify({jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'scout',version:'1.1.0'}}}),signal:AbortSignal.timeout(20000)});
   const initialized=decodeRpc(await init.text());if(!init.ok||!initialized?.result)return {ok:false,state:'Authentication failed',httpStatus:init.status};
   const session=init.headers.get('mcp-session-id');if(session)headers['mcp-session-id']=session;
   headers['mcp-protocol-version']=initialized.result.protocolVersion||'2025-03-26';
@@ -69,7 +69,7 @@ export async function vexcelRpc(env,name,args,fetcher=fetch){
 export async function vexcelCheck(env,fetcher=fetch){
  if(!env.VEXCEL_API_KEY)return {name:'Vexcel API',ok:false,state:'Not configured',detail:'Vexcel credentials have not been configured.'};
  try{
-  const r=await fetcher('https://api.vexcelgroup.com/v2/mcp',{method:'POST',headers:{'content-type':'application/json',accept:'application/json, text/event-stream','X-API-KEY':env.VEXCEL_API_KEY},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'homefit-access-check',version:'1.0.0'}}}),signal:AbortSignal.timeout(15000)});
+  const r=await fetcher('https://api.vexcelgroup.com/v2/mcp',{method:'POST',headers:{'content-type':'application/json',accept:'application/json, text/event-stream','X-API-KEY':env.VEXCEL_API_KEY},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'scout-access-check',version:'1.0.0'}}}),signal:AbortSignal.timeout(15000)});
   if(!r.ok)return {name:'Vexcel API',ok:false,state:r.status===401||r.status===403?'Access denied':'Check incomplete',detail:'Vexcel MCP returned HTTP '+r.status+'. Imagery permissions remain unverified.'};
   const body=decodeRpc(await r.text());if(!body?.result)return {name:'Vexcel API',ok:false,state:'Check incomplete',detail:'The Vexcel discovery service did not complete initialization. Imagery permissions remain unverified.'};
   return {name:'Vexcel API',ok:true,state:'Connected',detail:'Vexcel MCP authentication succeeded. Product-specific imagery and structure access still need verification.'};

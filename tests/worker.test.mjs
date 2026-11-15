@@ -6,7 +6,7 @@ test('built Worker serves the page and catalog without leaking server credential
  const env={MATTERPORT_API_KEY:'server-only-key',MATTERPORT_API_TOKEN:'server-only-secret',VEXCEL_API_KEY:'server-only-vexcel',MATTERPORT_SDK_KEY:'browser-sdk-key'};
  const response=await worker.fetch(new Request('https://homefit.test/'),env);
  assert.equal(response.status,200);const html=await response.text();
- assert.match(html,/<title>HomeFit/);assert.ok(!html.includes('server-only'));assert.ok(!html.includes('browser-sdk-key'));
+ assert.match(html,/<title>Scout/);assert.ok(!html.includes('server-only'));assert.ok(!html.includes('browser-sdk-key'));
  const script=html.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
  assert.doesNotThrow(()=>new Function(script));
  assert.ok(!script.includes('/*__DOMAIN__*/'));
@@ -29,7 +29,7 @@ test('standalone preview embeds real catalog data and syntactically valid client
 test('personal matching and the 2D planner are removed; Bundle assets use the host binding',async()=>{
  const html=await (await worker.fetch(new Request('https://homefit.test/'))).text();
  assert.ok(!html.includes('MAKE IT PERSONAL'));assert.ok(!html.includes('needsDialog'));assert.ok(!html.includes('plannerCanvas'));
- assert.ok(html.includes('Furnish in 3D'));assert.ok(html.includes('mp.transformControls'));
+ assert.ok(html.includes('Furniture studio'));assert.ok(!html.includes('>homefit'));assert.ok(html.includes('mp.transformControls'));
  const url='https://homefit.test/bundle/version.txt';
  assert.equal((await worker.fetch(new Request(url))).status,404);
  const asset=await worker.fetch(new Request(url),{ASSETS:{fetch:request=>new Response(new URL(request.url).pathname)}});

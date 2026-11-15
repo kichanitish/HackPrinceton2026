@@ -1,4 +1,17 @@
-# Furniture model credits
+# Asset credits
+
+## Homepage photography
+
+The mode-dependent hero images use real photographs from Pexels, published in 2020–2021, rather than generated portraits. They are displayed with responsive cropping and a readability gradient. They illustrate the experience and do not depict actual Scout customers or imply endorsement.
+
+| Use | Photograph | Photographer | License |
+|---|---|---|---|
+| Homes | [Happy Family Sitting on a Couch](https://www.pexels.com/photo/happy-family-sitting-on-a-couch-4260639/) | August de Richelieu | [Pexels License](https://www.pexels.com/license/) |
+| Business spaces | [A Woman Standing Behind the Counter of a Coffee Shop](https://www.pexels.com/photo/a-woman-standing-behind-the-counter-of-a-coffee-shop-6612738/) | Pavel Danilyuk | [Pexels License](https://www.pexels.com/license/) |
+
+Images load from the Pexels image CDN and require internet access. The text and search remain usable if photography cannot load.
+
+## Furniture model credits
 
 The detailed furniture options load from Matterport's separate Showcase SDK examples asset host, release `assets-1.1.0`. These assets are not included in the core Bundle SDK archive. Original licensing is documented by [Matterport's content attribution page](https://matterport.github.io/showcase-sdk/sdkbundle_content_attribution.html).
 
@@ -13,6 +26,6 @@ The detailed furniture options load from Matterport's separate Showcase SDK exam
 
 [Creative Commons Attribution 4.0 license](https://creativecommons.org/licenses/by/4.0/).
 
-HomeFit centers, rotates and rescales these models for staging. Preset dimensions are visualization estimates and may distort original proportions when edited. Model credits and adaptation notices are also available inside the furniture studio. Matterport's examples with noncommercial, no-derivatives or separately restricted licenses are not included in this collection.
+Scout centers, rotates and rescales these models for staging. Preset dimensions are visualization estimates and may distort original proportions when edited. Model credits and adaptation notices are also available inside the furniture studio. Matterport's examples with noncommercial, no-derivatives or separately restricted licenses are not included in this collection.
 
-The simple bed, desk, dining table and legacy simple sofa are HomeFit-authored procedural meshes. Existing saved arrangements using these shapes remain supported.
+The simple bed, desk, dining table and legacy simple sofa are Scout-authored procedural meshes. Existing saved arrangements using these shapes remain supported.

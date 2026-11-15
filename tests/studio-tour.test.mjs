@@ -1,0 +1,21 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
+const html=await readFile(new URL('../Scout.html',import.meta.url),'utf8');
+const script=html.match(/<script type="module">([\s\S]*?)<\/script>/)[1].replace(/\ninit\(\);\s*$/,'');
+test('3D tours open the furniture studio by default and reuse the current viewer without resetting its session',async()=>{
+ const nodes=new Map();
+ const element=()=>({value:'',dataset:{},children:[],classList:{toggle(){}},addEventListener(){},setAttribute(){},querySelectorAll(){return []},querySelector(){return element()},replaceChildren(...items){this.children=items},showModal(){this.open=true},close(){this.open=false}});
+ const document={getElementById(id){if(!nodes.has(id))nodes.set(id,element());return nodes.get(id)},createElement:element,querySelectorAll(){return []},querySelector(){return element()},addEventListener(){}};
+ let requests=0;
+ const context=vm.createContext({document,window:{addEventListener(){}},URL,location:{href:'http://localhost:4317/'},setTimeout,clearTimeout,setInterval,clearInterval,fetch:async()=>{requests++;return {ok:false}}});
+ vm.runInContext(script,context);
+ vm.runInContext("config={sdkKey:'test-sdk'};propertyMap.set(1,{id:1,name:'Studio property',plans:[{id:10,name:'A1',tours:[{id:'scan1',scope:'Floor plan'}]}]});selectPlanScan=async plan=>plan.tours[0];loadModel=async()=>({ok:false});showConnections=()=>{};renderTourRooms=()=>{};renderScanCapabilities=()=>{};clearScanCapabilities=()=>{};clearSdkRoomData=()=>{};",context);
+ await vm.runInContext('openTour(1,10)',context);
+ const frame=nodes.get('tourFrame').children[0];assert.equal(new URL(frame.src).pathname,'/bundle/showcase.html');assert.equal(nodes.get('furniturePanel').open,true);
+ const session=vm.runInContext('tourSession',context),calls=requests;
+ await vm.runInContext('openTour(1,10)',context);
+ assert.equal(nodes.get('tourFrame').children[0],frame);assert.equal(vm.runInContext('tourSession',context),session);assert.equal(requests,calls);
+ assert.equal(vm.runInContext("petSummary({noPets:false,pets:[{type:'Cat'}]})",context),'Pet friendly · cats');
+});

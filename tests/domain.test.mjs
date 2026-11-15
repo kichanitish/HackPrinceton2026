@@ -14,6 +14,11 @@ test('preferred plan falls back to a valid filtered plan',()=>{
  assert.equal(selectPlan(p,{beds:'2'},10).id,11);
  assert.equal(selectPlan(p,{budget:'500'}),null);
 });
+test('pet-friendly browsing accepts recorded cat or dog policies and excludes missing or prohibited pets',()=>{
+ assert.ok(matchingPlans({...p,pets:[{type:'Cat'}]},{dogs:true}).length);
+ assert.equal(matchingPlans({...p,pets:[]},{dogs:true}).length,0);
+ assert.equal(matchingPlans({...p,noPets:true,pets:[{type:'Cat'}]},{dogs:true}).length,0);
+});
 test('restored shortlist rejects invalid ids, duplicate properties, and more than three properties',()=>{
  const props=[p,...[2,3,4].map(id=>({...p,id}))];
  assert.deepEqual(normalizeSelections([{propertyId:1,planId:99},{propertyId:1,planId:11},{propertyId:1,planId:10},{propertyId:2,planId:11},{propertyId:3,planId:11},{propertyId:4,planId:11}],props),[{propertyId:1,planId:11},{propertyId:2,planId:11},{propertyId:3,planId:11}]);

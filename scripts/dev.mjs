@@ -20,7 +20,7 @@ let worker=(await import(new URL('../dist/server/index.js',import.meta.url))).de
 let refreshTimer;
 for(const dir of ['src','worker','data'])watch(root+dir,{recursive:true},()=>{
  clearTimeout(refreshTimer);refreshTimer=setTimeout(async()=>{
-  try{execFileSync(process.execPath,['scripts/build.mjs'],{cwd:root,stdio:'inherit'});worker=(await import(new URL('../dist/server/index.js?revision='+Date.now(),import.meta.url))).default;console.log('HomeFit updated. Refresh your browser.');}
+  try{execFileSync(process.execPath,['scripts/build.mjs'],{cwd:root,stdio:'inherit'});worker=(await import(new URL('../dist/server/index.js?revision='+Date.now(),import.meta.url))).default;console.log('Scout updated. Refresh your browser.');}
   catch{console.log('Build failed. The previous working version is still running.');}
  },150);
 });
@@ -44,5 +44,5 @@ const server=http.createServer(async(req,res)=>{
   res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));
  }catch{res.writeHead(500,{'content-type':'application/json'});res.end(JSON.stringify({error:'An unexpected server error occurred'}))}
 });
-server.listen(port,'127.0.0.1',()=>console.log('HomeFit is ready at http://localhost:'+port));
+server.listen(port,'127.0.0.1',()=>console.log('Scout is ready at http://localhost:'+port));
 process.on('SIGINT',()=>server.close(()=>process.exit(0)));

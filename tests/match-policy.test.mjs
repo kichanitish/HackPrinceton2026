@@ -7,12 +7,26 @@ const analysis=(values={})=>({scope:'housing',issue:'none',filters:{},location:{
 const property=(id,lat,lng,zip='90001')=>({id,name:'Property '+id,city:'Los Angeles',lat,lng,zip,pets:[],parking:[],plans:[{id:id*10,name:'A1',rentMin:1500,rentMax:1700,beds:1,baths:1,sqftMin:800,available:1,tours:[{id:'scan'+id}]}]});
 const properties=[property(1,33.95,-118.4),property(2,34.0,-118.3),property(3,34.25,-118.1),property(4,null,null),property(5,33.94,-118.41)];
 const selections=matches=>matches.filter((m,i,all)=>all.findIndex(x=>x.propertyId===m.propertyId)===i).slice(0,3).map(m=>({propertyId:m.propertyId,planId:m.planId,strengthKeys:['rent'],tradeoffKey:'fees'}));
+test('description-first search adopts an explicitly requested city while retaining hard requirements',async()=>{
+ const result=await recommendProperties(properties,{...input,city:'Houston',descriptionFirst:true,needs:'An apartment in Los Angeles under $2000'},{runAgent:async({tools})=>{
+  const a=await tools.analyze_preferences(analysis({filters:{city:'Los Angeles'},location:{}}));assert.equal(a.status,'ready');
+  const found=await tools.search_properties({city:'Houston'});assert.ok(found.matches.length);await tools.finish_shortlist({selections:selections(found.matches)});
+ }});
+ assert.equal(result.criteria.city,'Los Angeles');assert.ok(result.matches.every(m=>m.rentMin<=2000));
+});
+test('description-first landmark search adopts the verified landmark city without guessing a radius',async()=>{
+ const result=await recommendProperties(properties,{...input,city:'Houston',descriptionFirst:true},{runAgent:async({tools})=>{
+  const a=await tools.analyze_preferences(analysis());assert.equal(a.status,'ready');
+  const found=await tools.search_properties({});await tools.finish_shortlist({selections:selections(found.matches)});
+ }});
+ assert.equal(result.criteria.city,'Los Angeles');assert.equal(result.criteria.radiusMiles,20);
+});
 test('radius checks use listing coordinates, not broad ZIP matches or model-provided locations',async()=>{
  const result=await recommendProperties(properties,input,{runAgent:async({tools})=>{
   const a=await tools.analyze_preferences(analysis());assert.equal(a.status,'ready');
   const found=await tools.search_properties({});assert.deepEqual(found.matches.map(m=>m.propertyId).sort(),[1,2,5]);await tools.finish_shortlist({selections:selections(found.matches)});
  }});
- assert.equal(result.matches.length,3);assert.match(result.matches[0].strengths[0],/mi from.*straight-line/);assert.match(result.matches[0].tradeoff,/driving miles/);
+ assert.equal(result.matches.length,3);assert.match(result.matches[0].strengths[0],/mi from.*straight-line/);assert.equal(result.matches[0].tradeoff,'');
  for(const m of result.matches)assert.ok(distanceMiles(properties.find(p=>p.id===m.propertyId),result.criteria.location)<=20);
 });
 test('scope analysis is mandatory and off-topic requests never invoke search or change selections',async()=>{

@@ -52,7 +52,7 @@ async function jumpToRoom(id){
 }
 async function saveTourView(){
  const connected=sdk;if(!connected)return;$('snapshotButton').disabled=true;
- try{const uri=await connected.Renderer.takeScreenShot({width:1600,height:1000},{mattertags:false,measurements:false,sweeps:false,views:false});if(connected!==sdk)return;const a=document.createElement('a');a.href=uri;a.download='homefit-interior-view.jpg';a.click();toast('Saved the current Matterport view.')}catch{toast('This view could not be saved.')}finally{$('snapshotButton').disabled=!sdk?.Renderer?.takeScreenShot}
+ try{const uri=await connected.Renderer.takeScreenShot({width:1600,height:1000},{mattertags:false,measurements:false,sweeps:false,views:false});if(connected!==sdk)return;const a=document.createElement('a');a.href=uri;a.download='scout-interior-view.jpg';a.click();toast('Saved the current Matterport view.')}catch{toast('This view could not be saved.')}finally{$('snapshotButton').disabled=!sdk?.Renderer?.takeScreenShot}
 }
 async function autoWalkthrough(){
  if($('autoWalk').textContent==='Stop walkthrough'){walkRun++;$('autoWalk').textContent='Auto walkthrough';return}
@@ -72,14 +72,13 @@ function modelSummary(result){
 }
 function renderCompareLive(items){
  const tbody=$('comparisonContent').querySelector('tbody');if(!tbody)return;
- const row=document.createElement('tr');row.innerHTML='<th scope="row">MATTERPORT INTERIOR</th>'+items.map(({property:p,plan})=>'<td><div id="modelCompare'+p.id+'" data-model="'+escape(plan.tours[0].id)+'" class="live-summary">Loading measured room data…</div></td>').join('');tbody.insertBefore(row,[...tbody.rows].find(r=>r.querySelector('th')?.textContent==='RENT / SQ FT')||null);
- for(const {property:p,plan} of items){const initialId=plan.tours[0].id;selectPlanScan(plan).then(async tour=>{const result=await loadModel(tour.id),node=$('modelCompare'+p.id);if(node?.dataset.model===initialId){node.dataset.model=tour.id;node.innerHTML=modelSummary(result)}});}
  renderCompareAerial(items,tbody);
 }
 function renderDetailLive(p,plan){
  const body=$('detailContent').querySelector('.detail-body');if(!body)return;
- const section=document.createElement('section');section.className='live-data-section';section.innerHTML='<h3>Measured interior</h3><div id="detailModel" data-model="'+escape(plan.tours[0].id)+'" class="live-summary">Loading Matterport room details…</div><p>These dimensions describe the scan, which may be a representative unit. They are separate from the listing’s reported floor area.</p>';body.insertBefore(section,[...body.children].find(x=>x.tagName==='H3')||null);
- const initialId=plan.tours[0].id;selectPlanScan(plan).then(async tour=>{const result=await loadModel(tour.id),node=$('detailModel');if(node?.dataset.model===initialId){node.dataset.model=tour.id;node.innerHTML=modelSummary(result)}});
+ if(!plan.tours.length){renderDetailAerial(p,body);return}
+ const section=document.createElement('section');section.className='live-data-section';section.innerHTML='<h3>Measured interior</h3><div id="detailModel" data-model="'+escape(plan.tours[0]?.id)+'" class="live-summary">Loading Matterport room details…</div><p>These dimensions describe the scan, which may be a representative unit. They are separate from the listing’s reported floor area.</p>';body.insertBefore(section,[...body.children].find(x=>x.tagName==='H3')||null);
+ const initialId=plan.tours[0]?.id;selectPlanScan(plan).then(async tour=>{const result=await loadModel(tour.id),node=$('detailModel');if(node?.dataset.model===initialId){node.dataset.model=tour.id;node.innerHTML=modelSummary(result)}});
  renderDetailAerial(p,body);
 }
 let aerialCache=new Map(),aerialJobs=new Map(),aerialVerified=new Set();

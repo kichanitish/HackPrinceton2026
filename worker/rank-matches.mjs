@@ -8,8 +8,8 @@ export function compactMatchCandidates(rows){
 export function validatedMatchSelections(rows,criteria,input){
  const wantsFurniture=/\b(?:desk|desks|furniture|sofa|bed fit|office|work from home)\b/i.test(input.needs||'');
  return compactMatchCandidates(rows).slice(0,3).map(row=>{
-  const available=new Set(row.evidenceKeys);const preferred=[criteria.priority==='space'?'area':criteria.priority==='distance'?'distance':'rent',criteria.dogs?'dog':criteria.cats?'cats':criteria.parking?'parking':'beds','rent'];
-  return {propertyId:row.propertyId,planId:row.planId,strengthKeys:[...new Set(preferred)].filter(k=>available.has(k)).slice(0,2),tradeoffKey:wantsFurniture?'space':criteria.location?'distance':row.tradeoffKeys.includes('budget')?'budget':'fees'};
+  const available=new Set(row.evidenceKeys);const preferred=[criteria.priority==='space'?'area':criteria.priority==='distance'?'distance':'rent',criteria.dogs?'dog':criteria.cats?'cats':criteria.parking?'parking':criteria.mode==='commercial'?'use':'beds','area','rent'];
+  return {propertyId:row.propertyId,planId:row.planId,strengthKeys:[...new Set(preferred)].filter(k=>available.has(k)).slice(0,2),tradeoffKey:criteria.mode==='commercial'?'business':wantsFurniture?'space':criteria.location?'distance':row.tradeoffKeys.includes('budget')?'budget':'fees'};
  });
 }
 export async function completeMatchRanking({tools,input,criteria,invokeSelection,signal,onEvent=()=>{}}){
