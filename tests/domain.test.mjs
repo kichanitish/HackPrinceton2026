@@ -25,3 +25,30 @@ test('comparison explains rent differences and flags mismatched bedroom counts',
  assert.ok(notes.find(x=>x.kind==='beds'));
  assert.ok(notes.find(x=>x.kind==='space'));
 });
+
+import {latestAerialCollection} from '../src/domain.mjs';
+test('latest aerial collection is selected by capture date across imagery layers',()=>{
+ const collections=[{id:'urban-old',layer:'urban',lastCapture:'2025-12-01'},{id:'wide-new',layer:'wide-area',lastCapture:'2026-06-01'},{id:'unknown',layer:'urban'}];
+ assert.equal(latestAerialCollection(collections).id,'wide-new');assert.equal(collections[0].id,'urban-old');
+ assert.equal(latestAerialCollection([]),null);
+ assert.equal(latestAerialCollection([{id:'first-only',firstCapture:'2026-01-01'},{id:'bad',lastCapture:'invalid'}]).id,'first-only');
+});
+
+test('bathroom filters use the same available plan as bedroom and budget filters, including half baths',()=>{
+ const property={...p,plans:[
+  {id:1,beds:1,baths:1,rentMin:1000,available:1},
+  {id:2,beds:1,baths:1.5,rentMin:1200,available:1},
+  {id:3,beds:2,baths:2,rentMin:1800,available:1},
+  {id:4,beds:3,baths:3.5,rentMin:2500,available:1},
+  {id:5,beds:1,baths:null,rentMin:1100,available:1},
+  {id:6,beds:1,baths:2,rentMin:1000,available:0}
+ ]};
+ assert.deepEqual(matchingPlans(property,{baths:'1'}).map(x=>x.id),[1]);
+ assert.deepEqual(matchingPlans(property,{baths:'1.5'}).map(x=>x.id),[2]);
+ assert.deepEqual(matchingPlans(property,{baths:'2',beds:'1'}),[]);
+ assert.deepEqual(matchingPlans(property,{baths:'2',budget:'1700'}),[]);
+ assert.deepEqual(matchingPlans(property,{baths:'2',beds:'2',budget:'1800'}).map(x=>x.id),[3]);
+ assert.deepEqual(matchingPlans(property,{baths:'3'}).map(x=>x.id),[4]);
+ assert.deepEqual(matchingPlans(property,{baths:''}).map(x=>x.id),[1,2,3,4,5]);
+ assert.equal(selectPlan(property,{baths:'2'},1).id,3);
+});

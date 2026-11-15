@@ -17,8 +17,9 @@ function modelResponse(result,url){
 }
 export default {async fetch(request,env={}){
  const url=new URL(request.url);
+ if(url.pathname.startsWith('/bundle/'))return env.ASSETS?env.ASSETS.fetch(request):json({error:'Bundle assets are not configured on this host'},404);
  if(url.pathname==='/api/catalog')return new Response(JSON.stringify(CATALOG),{headers:{...JSON_HEADERS,'cache-control':'private, max-age=3600'}});
- if(url.pathname==='/api/config')return json({sdkKey:env.MATTERPORT_SDK_KEY||null,matterportConfigured:!!(env.MATTERPORT_API_KEY&&env.MATTERPORT_API_TOKEN),vexcelConfigured:!!env.VEXCEL_API_KEY});
+ if(url.pathname==='/api/config')return json({googleMapsEmbedKey:env.GOOGLE_MAPS_EMBED_KEY||null,sdkKey:env.MATTERPORT_SDK_KEY||null,matterportConfigured:!!(env.MATTERPORT_API_KEY&&env.MATTERPORT_API_TOKEN),vexcelConfigured:!!env.VEXCEL_API_KEY});
  if(url.pathname==='/api/discovery'){
   const result=await vexcelDiscover(env);
   if(!result.ok)return json(result,502);

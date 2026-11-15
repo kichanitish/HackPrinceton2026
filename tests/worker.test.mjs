@@ -26,3 +26,19 @@ test('standalone preview embeds real catalog data and syntactically valid client
  assert.match(html,/window.HOMEFIT_CATALOG=/);
  assert.doesNotThrow(()=>new Function(html.match(/<script type="module">([\s\S]*?)<\/script>/)[1]));
 });
+test('personal matching and the 2D planner are removed; Bundle assets use the host binding',async()=>{
+ const html=await (await worker.fetch(new Request('https://homefit.test/'))).text();
+ assert.ok(!html.includes('MAKE IT PERSONAL'));assert.ok(!html.includes('needsDialog'));assert.ok(!html.includes('plannerCanvas'));
+ assert.ok(html.includes('Furnish in 3D'));assert.ok(html.includes('mp.transformControls'));
+ const url='https://homefit.test/bundle/version.txt';
+ assert.equal((await worker.fetch(new Request(url))).status,404);
+ const asset=await worker.fetch(new Request(url),{ASSETS:{fetch:request=>new Response(new URL(request.url).pathname)}});
+ assert.equal(await asset.text(),'/bundle/version.txt');
+});
+
+test('only the website-restricted Google embed key is exposed through browser configuration',async()=>{
+ const env={GOOGLE_MAPS_EMBED_KEY:'public-embed-key',MATTERPORT_API_TOKEN:'private-token',VEXCEL_API_KEY:'private-vexcel'};
+ const config=await (await worker.fetch(new Request('https://homefit.test/api/config'),env)).json();
+ assert.equal(config.googleMapsEmbedKey,'public-embed-key');assert.ok(!JSON.stringify(config).includes('private-'));
+ const missing=await (await worker.fetch(new Request('https://homefit.test/api/config'),{})).json();assert.equal(missing.googleMapsEmbedKey,null);
+});

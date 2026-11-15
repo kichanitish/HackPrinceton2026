@@ -1,11 +1,16 @@
-import {readFile,mkdir,writeFile,rename} from 'node:fs/promises';
+import {readFile,mkdir,writeFile,rename,cp,access} from 'node:fs/promises';
 const root=new URL('../',import.meta.url);
 let worker=await readFile(new URL('worker/index.js',root),'utf8');
 let html=await readFile(new URL('src/index.html',root),'utf8');
 const domain=(await readFile(new URL('src/domain.mjs',root),'utf8')).replace(/^export /gm,'');
 const tour=(await readFile(new URL('src/tour.mjs',root),'utf8')).replace(/^export /gm,'');
+const capabilities=(await readFile(new URL('src/capabilities.mjs',root),'utf8')).replace(/^export /gm,'');
+const capabilityUI=await readFile(new URL('src/capabilities.js',root),'utf8');
+const furniture=await readFile(new URL('src/furniture.js',root),'utf8');
+const furnitureCore=(await readFile(new URL('src/furniture.mjs',root),'utf8')).replace(/^export /gm,'');
+const surroundings=(await readFile(new URL('src/surroundings.mjs',root),'utf8')).replace(/^export /gm,'');
 const live=await readFile(new URL('src/live.js',root),'utf8');
-const client=(await readFile(new URL('src/app.js',root),'utf8')).replace('/*__DOMAIN__*/',()=>domain).replace('/*__TOUR__*/',()=>tour).replace('/*__LIVE__*/',()=>live);
+const client=(await readFile(new URL('src/app.js',root),'utf8')).replace('/*__DOMAIN__*/',()=>domain).replace('/*__TOUR__*/',()=>tour).replace('/*__LIVE__*/',()=>surroundings+'\n'+live).replace('/*__CAPABILITIES__*/',()=>capabilities+'\n'+capabilityUI).replace('/*__FURNITURE__*/',()=>furnitureCore+'\n'+furniture);
 const css=await readFile(new URL('src/style.css',root),'utf8');
 html=html.replace('/*__CSS__*/',()=>css).replace('/*__JS__*/',()=>client);
 const api=(await readFile(new URL('worker/api.mjs',root),'utf8')).replace(/^export /gm,'');
@@ -20,3 +25,5 @@ await atomicWrite('dist/server/index.js',worker);await atomicWrite('dist/.openai
 const standalone=html.replace('<script type="module">',()=>'<script>window.HOMEFIT_CATALOG='+catalog.replace(/<\/script/gi,'<\\/script')+';</script><script type="module">');
 await atomicWrite('HomeFit.html',standalone);
 console.log('Built HomeFit: '+(Buffer.byteLength(worker)/1024/1024).toFixed(2)+' MB');
+
+try{await access(new URL('public/bundle/version.txt',root));await cp(new URL('public/bundle/',root),new URL('dist/client/bundle/',root),{recursive:true})}catch(error){if(error.code!=='ENOENT')throw error}

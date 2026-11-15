@@ -10,6 +10,10 @@ export function matchingPlans(property, filters={}) {
    const b=Number(filters.beds);
    if(b===3 ? !(p.beds>=3) : p.beds!==b)return false;
   }
+  if(filters.baths!==undefined && filters.baths!==''){
+   const b=Number(filters.baths);
+   if(!Number.isFinite(p.baths)||(b===3 ? p.baths<3 : p.baths!==b))return false;
+  }
   return !filters.budget || p.rentMin<=Number(filters.budget);
  });
 }
@@ -33,10 +37,14 @@ export function comparisonInsights(entries){
  const notes=[];
  const sorted=[...entries].sort((a,b)=>a.plan.rentMin-b.plan.rentMin);
  const low=sorted[0],high=sorted.at(-1),difference=high.plan.rentMin-low.plan.rentMin;
- if(difference>0)notes.push({kind:'rent',propertyId:low.property.id,difference,text:low.property.name+' starts $'+difference.toLocaleString('en-US')+'/month below '+high.property.name+'. This compares minimum asking rents, before fees.'});
+ if(difference>0)notes.push({kind:'rent',propertyId:low.property.id,difference,text:low.property.name+' starts $'+difference.toLocaleString('en-US')+'/month below '+high.property.name+'. These are minimum asking rents, before fees.'});
  const known=entries.filter(x=>x.plan.sqftMin>0).sort((a,b)=>b.plan.sqftMin-a.plan.sqftMin);
  if(known.length>1 && known[0].plan.sqftMin>known.at(-1).plan.sqftMin)notes.push({kind:'space',propertyId:known[0].property.id,text:known[0].property.name+' has the largest reported minimum floor-plan area: '+known[0].plan.sqftMin.toLocaleString('en-US')+' sq ft.'});
  if(new Set(entries.map(x=>x.plan.beds)).size>1)notes.push({kind:'beds',text:'These floor plans have different bedroom counts. Keep that difference in mind when comparing rent and space.'});
  if(new Set(entries.map(x=>x.property.city)).size>1)notes.push({kind:'city',text:'These properties are in different cities. Prices reflect different local markets.'});
  return notes;
+}
+export function latestAerialCollection(collections=[]){
+ const date=collection=>{const value=Date.parse(collection.lastCapture||collection.firstCapture||'');return Number.isFinite(value)?value:-Infinity};
+ return [...collections].sort((a,b)=>{const ad=date(a),bd=date(b);return ad===bd?Number(b.layer==='urban')-Number(a.layer==='urban'):bd-ad})[0]||null;
 }

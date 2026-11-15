@@ -1,4 +1,6 @@
 import http from 'node:http';
+import {readFile,realpath} from 'node:fs/promises';
+import {resolve,sep,extname} from 'node:path';
 import {existsSync} from 'node:fs';
 import {watch} from 'node:fs';
 import {fileURLToPath} from 'node:url';
@@ -26,6 +28,14 @@ const port=Number(process.env.PORT||4317);
 const server=http.createServer(async(req,res)=>{
  try{
   const url=new URL(req.url,'http://localhost:'+port);
+  if(url.pathname.startsWith('/bundle/')){
+   try{
+    const base=resolve(root,'public'),file=await realpath(resolve(base,'.'+decodeURIComponent(url.pathname)));
+    if(!file.startsWith(base+sep)||!['GET','HEAD'].includes(req.method)){res.writeHead(403);res.end();return}
+    const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.gql':'text/plain','.wasm':'application/wasm','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.woff':'font/woff','.woff2':'font/woff2','.txt':'text/plain'};
+    const bytes=await readFile(file);res.writeHead(200,{'content-type':mime[extname(file)]||'application/octet-stream','cache-control':'public, max-age=3600','x-content-type-options':'nosniff'});res.end(req.method==='HEAD'?undefined:bytes);return;
+   }catch{res.writeHead(404);res.end('Bundle asset unavailable. Run npm run sdk:install.');return}
+  }
   const request=new Request(url,{method:req.method,headers:req.headers});
   const response=await worker.fetch(request,process.env,{});
   res.writeHead(response.status,Object.fromEntries(response.headers));res.end(Buffer.from(await response.arrayBuffer()));
